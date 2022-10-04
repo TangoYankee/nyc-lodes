@@ -12,3 +12,7 @@ They are omitted from the main repository to reduce project size.
 - 2019 Residence Area Characteristics, All Jobs [download ny_rac_S000_JT00_2019.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/rac/ny_rac_S000_JT00_2019.csv.gz)
 - 2019 Workplace Area Characteristics, All Jobs [download ny_wac_S000_JT00_2019.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/wac/ny_wac_S000_JT00_2019.csv.gz)
 - 2019 Geography cross walk [download ny_xwalk.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/ny_xwalk.csv.gz)
+
+## Generated Data Files
+The `create_origin_dest_data.R` script will use the census data to generate the custom `ny_od_cw_tract_coord.csv` file.
+The custom file is used to generate the NY Lodes map.
