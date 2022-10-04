@@ -3,13 +3,18 @@ library(ggmap)
 maps_key = Sys.getenv("GOOGLE_MAPS_API_KEY")
 register_google(maps_key, "standard")
 
-od <- read.csv("./data/ny_od_cw_tract_coord.csv")
+options(scipen = 999)
+od <- read.csv("./data/nyc_od_cw_tract_coord.csv")
+same_borough_od <- od %>%
+  filter(h_geocode_county == w_geocode_county)
+exclude_manhattan_work_od <- od %>%
+  filter(w_geocode_county != 61)
 
-nyc <- get_map(location = "Bronx, NY", zoom = 10, color = "bw")
+nyc <- get_map(location = "New York, NY", zoom = 11, color = "bw")
 ggmap(nyc, darken = 0.8) +
   geom_segment(
-    data = od[od$S000 > 25,],
-    aes(y = h_lat, x = h_lon, yend = w_lat, xend = w_lon, alph = S000),
+    data = exclude_manhattan_work_od[exclude_manhattan_work_od$S000 > 4,],
+    aes(y = h_lat, x = h_lon, yend = w_lat, xend = w_lon, alpha = S000),
     color = "white",
     size = 0.3
   ) +
