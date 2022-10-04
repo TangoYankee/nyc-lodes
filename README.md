@@ -1,6 +1,6 @@
-## NYC LODES
+# NYC LODES
 
-# Google Maps Api Key
+## Google Maps Api Key
 An API key is required for the Google Maps routing service
 
 1. Obtain a Google Maps API key
