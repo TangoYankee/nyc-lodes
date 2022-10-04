@@ -1,9 +1,6 @@
 library(tidyverse)
 library(rgdal)
 
-maps_key = Sys.getenv("GOOGLE_MAPS_API_KEY")
-register_google(maps_key, "standard")
-
 origin_dest_full <- read.csv("./data/ny_od_main_JT00_2019.csv")
 origin_dest <- subset(origin_dest_full, select = c("w_geocode", "h_geocode", "S000"))
 cross_walk_full <- read.csv("./data/ny_xwalk.csv")
