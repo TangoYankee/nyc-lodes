@@ -20,3 +20,5 @@ ggplot() +
   geom_polygon(data = boros_nta_geo_tidy, aes(x = long, y = lat, group = group), fill='#69b3a2', color = 'white')
 
 
+
+
