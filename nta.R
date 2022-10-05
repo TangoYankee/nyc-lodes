@@ -12,3 +12,11 @@ nyc_nta_geo <- geojson_read('./data/nyc_nta_2010.geojson', what = 'sp')
 nyc_nta_geo_tidy <- tidy(nyc_nta_geo)
 ggplot() +
   geom_polygon(data = nyc_nta_geo_tidy, aes(x = long, y = lat, group = group), fill='#69b3a2', color = 'white')
+
+boros <- c("Bronx","Brooklyn","Manhattan", "Queens")
+boros_nta_geo <- nyc_nta_geo[nyc_nta_geo@data$BoroName %in% boros,]
+boros_nta_geo_tidy <- tidy(boros_nta_geo)
+ggplot() +
+  geom_polygon(data = boros_nta_geo_tidy, aes(x = long, y = lat, group = group), fill='#69b3a2', color = 'white')
+
+
