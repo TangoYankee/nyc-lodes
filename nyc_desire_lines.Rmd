@@ -53,7 +53,7 @@ ggmap(nyc_map, darken = 0.8) +
 ```
 
 Map the desire lines that exclude manhattan as the working location
-```{r}
+```{r, out.width = "100%", fig.align = "center", echo=FALSE}
 ggmap(nyc_map, darken = 0.8) +
   geom_segment(
     data = exclude_manhattan_work_od[exclude_manhattan_work_od$S000 > 4,],
