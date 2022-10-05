@@ -19,4 +19,8 @@ nyc_geoid_centroids <- ny_geoid_centroids %>%
   filter(county_id %in% counties) %>%
   rename(lon = X1) %>%
   rename(lat = X2)
-  
+
+## generation of centroids specific to nyc
+write.csv(nyc_geoid_centroids, './data/nyc_geoid_centroids.csv')
+
+choose(nrow(nyc_geoid_centroids), 2)

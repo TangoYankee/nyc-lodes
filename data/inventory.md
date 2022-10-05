@@ -12,6 +12,9 @@ They are omitted from the main repository to reduce project size.
 - 2019 Residence Area Characteristics, All Jobs [download ny_rac_S000_JT00_2019.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/rac/ny_rac_S000_JT00_2019.csv.gz)
 - 2019 Workplace Area Characteristics, All Jobs [download ny_wac_S000_JT00_2019.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/wac/ny_wac_S000_JT00_2019.csv.gz)
 - 2019 Geography cross walk [download ny_xwalk.csv.gz](https://lehd.ces.census.gov/data/lodes/LODES7/ny/ny_xwalk.csv.gz)
+- [2010 NYC NTA Data](https://www1.nyc.gov/site/planning/data-maps/open-data/census-download-metadata.page)
+  - [Download Census tract equivalents](https://www1.nyc.gov/assets/planning/download/office/planning-level/nyc-population/census2020/nyc2020census_tract_nta_cdta_relationships.xlsx?r=092221)
+  - [Download NTA GeoJSON](https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Neighborhood_Tabulation_Areas_2010/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson)
 
 ## Generated Data Files
 The `create_origin_dest_data.R` script will use the census data to generate the custom `ny_od_cw_tract_coord.csv` file.
