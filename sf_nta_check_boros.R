@@ -79,6 +79,34 @@ tm_shape(filter(bklyn_nta_poly, NTACode != "BK99")) +
       col = "black"
     )
 
+# Queens Map
+# QN99 cemetary and parks
+qn_nta_poly <- nyc_nta_sf %>%
+  filter(BoroCode == 4)
+qn_nta_surface <- qn_nta_poly %>%
+  mutate(geometry = st_point_on_surface(geometry))
+
+tm_shape(qn_nta_poly) +
+  tm_polygons(
+    col = "NTAName",
+    legend.show = FALSE
+  ) +
+  tm_shape(qn_nta_surface) +
+    tm_dots(
+      col = "black"
+    )
+
+tm_shape(filter(qn_nta_poly, NTACode != "QN99")) +
+  tm_polygons(
+    col = "NTAName",
+    legend.show = FALSE
+  ) +
+  tm_shape(filter(qn_nta_surface, NTACode != "QN99")) +
+    tm_dots(
+      col = "black"
+    )
+
+## Boroughs map
 boros_nta_sf <- nyc_nta_sf %>%
   filter(BoroName %in% boros)
 
