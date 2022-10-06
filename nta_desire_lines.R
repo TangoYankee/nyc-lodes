@@ -30,3 +30,5 @@ tm_shape(boros_nta_poly) +
     tm_dots(
       col = "#000000"
    )
+
+## 
