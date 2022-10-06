@@ -13,11 +13,43 @@ man_nta_poly <- nyc_nta_sf %>%
   filter(BoroCode == 1)
 man_nta_centroid <- man_nta_poly %>%
   mutate(geometry = st_centroid(geometry))
-tm_shape(filter(man_nta_poly, NTACode == "MN99")) +
+man_nta_surface <- man_nta_poly %>%
+  mutate(geometry = st_point_on_surface(geometry))
+tm_shape(filter(man_nta_poly, NTACode != "MN99")) +
   tm_polygons(
-    col = "NTAName"
+    col = "NTAName",
+    legend.show = FALSE
   ) +
-  tm_shape(filter(man_nta_centroid, NTACode == "MN99")) +
+  tm_shape(filter(man_nta_surface, NTACode != "MN99")) +
+  tm_dots(
+    col = "black"
+  )
+
+# Bronx map
+# BX10 Pelham bay country club
+# BX99 park-cemetary-etc
+bnx_nta_poly <- nyc_nta_sf %>%
+  filter(BoroCode == 2)
+bnx_nta_centroid <- bnx_nta_poly %>%
+  mutate(geometry = st_centroid(geometry))
+bnx_nta_surface <- bnx_nta_poly %>%
+  mutate(geometry = st_point_on_surface(geometry))
+tm_shape(bnx_nta_poly) +
+  tm_polygons(
+    col = "NTAName",
+    legend.show = FALSE
+  ) +
+  tm_shape(bnx_nta_surface) +
+  tm_dots(
+    col = "black"
+  )
+
+tm_shape(filter(bnx_nta_poly, NTACode != "BX99" & NTACode != "BX10")) +
+  tm_polygons(
+    col = "NTAName",
+    legend.show = FALSE
+  ) +
+  tm_shape(filter(bnx_nta_surface, NTACode != "BX99" & NTACode != "BX10")) +
   tm_dots(
     col = "black"
   )
