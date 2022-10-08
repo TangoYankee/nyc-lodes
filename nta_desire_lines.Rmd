@@ -1,0 +1,100 @@
+# Desire Lines between NYC NTAs
+
+Import required libraries
+```{r, message=FALSE }
+library(sf)
+library(geojsonsf)
+library(tidyverse)
+library(tmap)
+```
+
+Import data from files
+- NYC NTA polygons
+- NYC NTA to tract equivalence
+- NYS OD 
+```{r, message=FALSE}
+options(scipen = 999)
+nyc_nta_geo <- geojson_sf('./data/nyc_nta_2010.geojson')
+nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
+ny_origin_dest <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
+
+Define places of interest
+```{r, message = FALSE}
+boros <- c("Bronx", "Brooklyn", "Manhattan", "Queens")
+county_codes <- c("005", "047", "061", "081")
+parks <- c("BX10", "BX99", "BK99", "MN99", "QN99")
+```
+
+Create equivalency for counties and tracts with NTAs
+```{r, message = FALSE}
+county_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
+  filter(!(nta_code %in% parks)) %>%
+  mutate(county_tract = str_c(`county_code`, `census_tract`)) %>%
+  select("county_tract", "nta_code")
+```
+
+Reduce NYS origin destination data to only ntas of interest
+```{r, message = FALSE}
+nta_ods <- ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
+      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
+    ) %>%
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  select(h_county_tract, w_county_tract, S000) %>%
+  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  filter(w_nta_code != h_nta_code) %>%
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
+
+Reduce NYC geography to NTAs of interest
+```{r, message= FALSE}
+nta_polys <- nyc_nta_geo %>%
+  filter(CountyFIPS %in% county_codes) %>%
+  filter(!(NTACode %in% parks)) %>%
+  select(BoroName, NTACode, geometry)
+```
+
+Find points in NTA polygons
+```{r, message = FALSE}
+nta_points <- nta_polys %>%
+  mutate(geometry = st_point_on_surface(geometry))
+```
+
+Define desire lines for origins and destinations
+```{r, message=FALSE}
+nta_od_lines <- nta_ods %>%
+  left_join(nta_points, c("h_nta_code" = "NTACode")) %>%
+  rename(h_geometry = geometry) %>%
+  left_join(nta_points, c("w_nta_code" = "NTACode")) %>%
+  rename(w_geometry = geometry) %>%
+  mutate(geometry = st_union(h_geometry, w_geometry)) %>%
+  mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
+  select("od", "S000", "geometry") %>%
+  st_as_sf()
+```
+
+Map of desire lines between NTAs
+```{r, out.width="100%", fig.align='center'}
+tm_shape(nta_polys) +
+  tm_polygons(
+    col = "BoroName",
+  ) +
+  tm_shape(nta_od_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      )
+```
