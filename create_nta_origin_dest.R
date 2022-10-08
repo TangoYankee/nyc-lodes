@@ -73,12 +73,8 @@ tm_shape(boros_nta_poly) +
   tm_polygons(
     col = "BoroName",
   ) +
-  tm_shape(sf_nta_commute_lines) +
+  tm_shape(nta_commute_lines) +
     tm_lines(
       col = "#212121",
       lwd = "S000",
       )
-
-ggplot() +
-  geom_sf(data = boros_nta_poly, aes(color = BoroName)) +
-  geom_sf(data = nta_commutes_lines$geometry, aes(color = "#212121"))
