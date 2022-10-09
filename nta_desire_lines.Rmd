@@ -11,11 +11,13 @@ library(tmap)
 Import data from files
 - NYC NTA polygons
 - NYC NTA to tract equivalence
+- NYC subway lines
 - NYS OD 
 ```{r, message=FALSE}
 options(scipen = 999)
 nyc_nta_geo <- geojson_sf('./data/nyc_nta_2010.geojson')
 nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
+nyc_subway_lines <- geojson_sf('./data/subway-lines.geojson')
 ny_origin_dest <- read_csv("./data/ny_od_main_JT00_2019.csv")
 ```
 
@@ -86,7 +88,12 @@ tm_shape(nta_dests) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "Trips"
+    title = "Trips",
+  ) + 
+  tm_shape(nyc_subway_lines) +
+  tm_lines(
+    col = "#7c2544",
+    alpha = 0.7
   ) +
   tm_layout(
     title = "Most popular destinations",
@@ -115,6 +122,11 @@ tm_shape(nta_origins) +
     col = "S000",
     style = "jenks",
     title = "Trips"
+  ) +
+  tm_shape(nyc_subway_lines) +
+  tm_lines(
+    col = "#7c2544",
+    alpha = 0.7
   ) +
   tm_layout(
     title = "Most popular origins",
