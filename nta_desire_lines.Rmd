@@ -67,6 +67,60 @@ nta_polys <- nyc_nta_geo %>%
   select(BoroName, NTACode, geometry)
 ```
 
+Define most popular destinations
+```{r, message=FALSE}
+nta_dests <- nta_ods %>%
+  group_by(w_nta_code) %>%
+  summarise(
+    w_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(nta_polys, c("w_nta_code"= "NTACode")) %>%
+  st_as_sf()
+```
+
+Map the most popular destinations of commuters coming from within NYC
+```{r, out.width="100%", fig.align='center'}
+tm_shape(nta_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Trips"
+  ) +
+  tm_layout(
+    title = "Most popular destinations",
+    legend.outside = TRUE
+  )
+```
+
+
+Define most popular origins
+```{r, message=FALSE}
+nta_origins <- nta_ods %>%
+  group_by(h_nta_code) %>%
+  summarise(
+    h_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(nta_polys, c("h_nta_code" = "NTACode")) %>%
+  st_as_sf()
+```
+
+Map the most popular origins for commuters working in NYC
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(nta_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Trips"
+  ) +
+  tm_layout(
+    title = "Most popular origins",
+    legend.outside = TRUE
+  )
+```
 Find points in NTA polygons
 ```{r, message = FALSE}
 nta_points <- nta_polys %>%
@@ -91,10 +145,15 @@ Map of desire lines between NTAs
 tm_shape(nta_polys) +
   tm_polygons(
     col = "BoroName",
+    title = "Borough",
   ) +
   tm_shape(nta_od_lines) +
     tm_lines(
       col = "#212121",
       lwd = "S000",
-      )
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
 ```
