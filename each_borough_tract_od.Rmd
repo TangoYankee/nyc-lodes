@@ -156,76 +156,96 @@ tm_shape(bkn_dests) +
   )
 ```
 
-```{r, message = FALSE}
-nta_ods <- ny_origin_dest %>%
-  filter(
-    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
-      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
-    ) %>%
-  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
-  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
-  select(h_county_tract, w_county_tract, S000) %>%
-  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
-  rename(h_nta_code = nta_code) %>%
-  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
-  rename(w_nta_code = nta_code) %>%
-  filter(w_nta_code != h_nta_code) %>%
-  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
-  group_by(od) %>%
-  summarise(
-    h_nta_code,
-    w_nta_code,
-    S000 = sum(S000),
-    ) %>%
-  unique()
+3) Manhattan
+```{r, message=FALSE}
+mhn_ods <- get_boi_ods("061") 
 ```
 
-3) Manhattan
+a) Origins
 ```{r, message = FALSE}
-nta_ods <- ny_origin_dest %>%
-  filter(
-    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
-      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
-    ) %>%
-  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
-  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
-  select(h_county_tract, w_county_tract, S000) %>%
-  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
-  rename(h_nta_code = nta_code) %>%
-  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
-  rename(w_nta_code = nta_code) %>%
-  filter(w_nta_code != h_nta_code) %>%
-  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
-  group_by(od) %>%
-  summarise(
-    h_nta_code,
-    w_nta_code,
-    S000 = sum(S000),
-    ) %>%
-  unique()
+mhn_origins <- mhn_ods %>%
+  get_boi_origin(boro_code = "1")
+```
+
+Map the most popular origins
+```{r, out.width="100%", fig.align='center'}
+tm_shape(mhn_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents",
+  ) + 
+  tm_layout(
+    title = "Most popular residential blocks in Manhattan",
+    legend.outside = TRUE
+  )
+```
+
+b) Destinations
+```{r, message = FALSE}
+mhn_dests <- mhn_ods %>%
+  get_boi_dest(boro_code = "1")
+```
+
+Map the most popular destinations
+```{r, out.width="100%", fig.align='center'}
+mhn_dests_valid_dem <- mhn_dests %>%
+  filter(!is.na(st_dimension(geometry)))
+tm_shape(mhn_dests_valid_dem) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers",
+  ) + 
+  tm_layout(
+    title = "Most popular work blocks in Manhattan",
+    legend.outside = TRUE
+  )
 ```
 
 4) Queens
+```{r, message=FALSE}
+qns_ods <- get_boi_ods("081")
+```
+
+a) Origins
 ```{r, message = FALSE}
-nta_ods <- ny_origin_dest %>%
-  filter(
-    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
-      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
-    ) %>%
-  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
-  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
-  select(h_county_tract, w_county_tract, S000) %>%
-  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
-  rename(h_nta_code = nta_code) %>%
-  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
-  rename(w_nta_code = nta_code) %>%
-  filter(w_nta_code != h_nta_code) %>%
-  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
-  group_by(od) %>%
-  summarise(
-    h_nta_code,
-    w_nta_code,
-    S000 = sum(S000),
-    ) %>%
-  unique()
+qns_origins <- qns_ods %>%
+  get_boi_origin(boro_code = "4")
+```
+
+Map the most popular origins
+```{r, out.width="100%", fig.align='center'}
+tm_shape(qns_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents",
+  ) + 
+  tm_layout(
+    title = "Most popular residential blocks in Queens",
+    legend.outside = TRUE
+  )
+```
+
+b) Destinations
+```{r, message = FALSE}
+qns_dests <- qns_ods %>%
+  get_boi_dest(boro_code = "4")
+```
+
+Map the most popular destinations
+```{r, out.width="100%", fig.align='center'}
+qns_dests_valid_dem <- qns_dests %>%
+  filter(!is.na(st_dimension(geometry)))
+tm_shape(qns_dests_valid_dem) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers",
+  ) + 
+  tm_layout(
+    title = "Most popular work blocks in Queens",
+    legend.outside = TRUE
+  )
 ```
