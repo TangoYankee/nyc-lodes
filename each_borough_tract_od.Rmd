@@ -1,0 +1,231 @@
+# OD for census tracts within each borough 
+
+Import required libraries
+```{r, message=FALSE }
+library(sf)
+library(geojsonsf)
+library(tidyverse)
+library(tmap)
+```
+
+Import data from files
+- NYS OD 
+```{r, message=FALSE}
+options(scipen = 999)
+nyc_block_outlines <- geojson_sf('./data/nyc_block_outlines.geojson')
+ny_origin_dest <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
+
+Define places of interest
+```{r, message = FALSE}
+boros <- c("Bronx", "Brooklyn", "Manhattan", "Queens")
+county_codes <- c("005", "047", "061", "081")
+boro_codes = c("2", "3", "1", "4")
+```
+
+Reduce borough outlines to Code and Geometry Map
+```{r, message = FALSE}
+nyc_block_outlines_map <- nyc_block_outlines %>%
+  select(BCTCB2010, geometry)
+```
+
+Reduce NYS origin destination data to trips within borough of interest:
+
+Utility functions;
+```{r, message=FALSE}
+get_boi_ods <- function(county_code){
+  ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) == county_code &
+      str_sub(as.character(h_geocode), 3, 5) == county_code
+    )
+}
+
+boi_segment <- function(boro_ods, boro_code) {
+  boro_ods %>%
+  select(BCTCB2010, S000) %>%
+  group_by(BCTCB2010) %>%
+    summarize(
+      S000 = sum(S000),
+    ) %>%
+  left_join(nyc_block_outlines_map) %>%
+  st_as_sf() %>%
+  st_make_valid()
+}
+
+get_boi_origin <- function(boro_ods, boro_code) {
+  boro_ods %>%
+    mutate(BCTCB2010 = str_c(boro_code, str_sub(as.character(h_geocode), 6, 15))) %>%
+    boi_segment(boro_code)
+}
+
+get_boi_dest <- function(boro_ods, boro_code) {
+  boro_ods %>%
+    mutate(BCTCB2010 = str_c(boro_code, str_sub(as.character(w_geocode), 6, 15))) %>%
+    boi_segment(boro_code) 
+}
+```
+
+1) The Bronx
+```{r, message=FALSE}
+bnx_ods <- get_boi_ods("005")
+```
+
+a) Origins
+```{r, message = FALSE}
+bnx_origins <- bnx_ods %>%
+  get_boi_origin(boro_code = "2")
+```
+
+Map the most popular origins
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bnx_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents",
+  ) + 
+  tm_layout(
+    title = "Most popular residential blocks in the Bronx",
+    legend.outside = TRUE
+  )
+```
+
+b) Destinations
+```{r, message = FALSE}
+bnx_dests <- bnx_ods %>%
+  get_boi_dest(boro_code = "2")
+```
+
+Map the most popular destinations
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bnx_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers",
+  ) + 
+  tm_layout(
+    title = "Most popular work blocks in the Bronx",
+    legend.outside = TRUE
+  )
+```
+
+2) Brooklyn
+```{r, message=FALSE}
+bkn_ods <- get_boi_ods("047") 
+```
+
+a) Origins
+```{r, message = FALSE}
+bkn_origins <- bkn_ods %>%
+  get_boi_origin(boro_code = "3")
+```
+
+Map the most popular origins
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bkn_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents",
+  ) + 
+  tm_layout(
+    title = "Most popular residential blocks in Brooklyn",
+    legend.outside = TRUE
+  )
+```
+
+b) Destinations
+```{r, message = FALSE}
+bkn_dests <- bkn_ods %>%
+  get_boi_dest(boro_code = "3")
+```
+
+Map the most popular destinations
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bkn_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers",
+  ) + 
+  tm_layout(
+    title = "Most popular work blocks in Brooklyn",
+    legend.outside = TRUE
+  )
+```
+
+```{r, message = FALSE}
+nta_ods <- ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
+      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
+    ) %>%
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  select(h_county_tract, w_county_tract, S000) %>%
+  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  filter(w_nta_code != h_nta_code) %>%
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
+
+3) Manhattan
+```{r, message = FALSE}
+nta_ods <- ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
+      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
+    ) %>%
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  select(h_county_tract, w_county_tract, S000) %>%
+  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  filter(w_nta_code != h_nta_code) %>%
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
+
+4) Queens
+```{r, message = FALSE}
+nta_ods <- ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
+      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
+    ) %>%
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  select(h_county_tract, w_county_tract, S000) %>%
+  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  filter(w_nta_code != h_nta_code) %>%
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
