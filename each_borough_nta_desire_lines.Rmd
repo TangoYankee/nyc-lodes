@@ -393,3 +393,22 @@ tm_shape(qn_outlines) +
     legend.text.size = 0.55,
   )
 ```
+
+## Total Trips summary
+### Manhattan
+```{r}
+sum(filter(intra_borough_nta_ods, boro=="MN")$S000)
+```
+### Bronx
+```{r}
+sum(filter(intra_borough_nta_ods, boro=="BX")$S000)
+```
+
+### Brooklyn
+```{r}
+sum(filter(intra_borough_nta_ods, boro=="BK")$S000)
+```
+### Queens
+```{r}
+sum(filter(intra_borough_nta_ods, boro=="QN")$S000)
+```
