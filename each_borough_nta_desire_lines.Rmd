@@ -61,10 +61,7 @@ Look exclusively at trips that start and end in the same Borough
 ```{r, message=FALSE}
 intra_borough_nta_ods <- nta_ods %>%
   mutate(h_boro = str_sub(h_nta_code, 1, 2)) %>%
-  mutate(w_boro = str_sub(w_nta_code, 1, 2)) %>%
-  filter(h_boro == w_boro) %>% 
-  select(!w_boro)  %>%
-  rename(boro = h_boro)
+  mutate(w_boro = str_sub(w_nta_code, 1, 2))
 ```
 
 Reduce NYC geography to NTAs of interest
@@ -75,10 +72,10 @@ nta_polys <- nyc_nta_geo %>%
   select(BoroName, NTACode, geometry)
 ```
 
-Find poles of inaccessibility for NTAs
+Find point on surface
 ```{r, message=FALSE}
 nta_points <- nta_polys %>%
-  mutate(geometry = polylabelr::poi(geometry))
+  mutate(geometry = st_point_on_surface(geometry))
 ```
 
 Define most popular destinations
@@ -107,10 +104,23 @@ intra_borough_origins <- intra_borough_nta_ods %>%
   st_as_sf()
 ```
 
+Define desire lines for origins and destinations
+```{r, message=FALSE}
+intra_boro_od_lines <- intra_borough_nta_ods %>%
+  left_join(nta_points, c("h_nta_code" = "NTACode")) %>%
+  rename(h_geometry = geometry) %>%
+  left_join(nta_points, c("w_nta_code" = "NTACode")) %>%
+  rename(w_geometry = geometry) %>%
+  mutate(geometry = st_union(h_geometry, w_geometry)) %>%
+  mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
+  select("od", "S000", "geometry") %>%
+  st_as_sf()
+```
 ## Manhattan
 
+### Origins
 Filter down to Manhattan trips
 ```{r, message = FALSE}
-mn_ods <- intra_borough_nta_ods %>%
-  filter(boro == "MN")
+mn_origins <- intra_borough_origins %>%
+  filter(BoroName == "Manhattan")
 ```
