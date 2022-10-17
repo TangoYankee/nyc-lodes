@@ -6,6 +6,7 @@ library(tidyverse)
 library(tmap)
 ```
 
+## Data pre-processing
 Import data from files
 - NYC NTA Polygons
 - NYC NTA to tract equivalence
@@ -64,4 +65,52 @@ intra_borough_nta_ods <- nta_ods %>%
   filter(h_boro == w_boro) %>% 
   select(!w_boro)  %>%
   rename(boro = h_boro)
+```
+
+Reduce NYC geography to NTAs of interest
+```{r, message= FALSE}
+nta_polys <- nyc_nta_geo %>%
+  filter(CountyFIPS %in% county_codes) %>%
+  filter(!(NTACode %in% parks)) %>%
+  select(BoroName, NTACode, geometry)
+```
+
+Find poles of inaccessibility for NTAs
+```{r, message=FALSE}
+nta_points <- nta_polys %>%
+  mutate(geometry = polylabelr::poi(geometry))
+```
+
+Define most popular destinations
+```{r, message=FALSE}
+intra_borough_dests <- intra_borough_nta_ods %>%
+  group_by(w_nta_code) %>%
+  summarise(
+    w_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(nta_polys, c("w_nta_code"= "NTACode")) %>%
+  st_as_sf()
+```
+
+Define most popular origins
+```{r, message=FALSE}
+intra_borough_origins <- intra_borough_nta_ods %>%
+  group_by(h_nta_code) %>%
+  summarise(
+    h_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(nta_polys, c("h_nta_code" = "NTACode")) %>%
+  st_as_sf()
+```
+
+## Manhattan
+
+Filter down to Manhattan trips
+```{r, message = FALSE}
+mn_ods <- intra_borough_nta_ods %>%
+  filter(boro == "MN")
 ```
