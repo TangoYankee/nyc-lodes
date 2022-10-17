@@ -121,6 +121,16 @@ intra_boro_od_lines <- intra_borough_nta_ods %>%
   st_as_sf()
 ```
 
+Define home desire areas
+- Origin and destination must be the same
+```{r, message=TRUE}
+intra_nta_desires <- intra_borough_nta_ods %>%
+  filter(h_nta_code == w_nta_code) %>%
+  rename(nta_code = h_nta_code) %>%
+  left_join(nta_polys, c("nta_code" = "NTACode")) %>%
+  select("od", "boro", "nta_code", "S000", "geometry") %>%
+  st_as_sf()
+```
 ## Manhattan
 
 ### Origins
@@ -184,6 +194,24 @@ tm_shape(mn_outlines) +
       col = "#212121",
       lwd = "S000",
       ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
+### NTAs where folks live and work in the same neighborhood
+```{r, message=FALSE}
+mn_intra_desires <- intra_nta_desires %>%
+  filter(boro == "MN")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(mn_intra_desires) +
+  tm_polygons(
+    col = "S000",
+    title = "Number of workers",
+  ) +
   tm_layout(
     legend.outside = TRUE,
     legend.text.size = 0.55,
@@ -258,6 +286,24 @@ tm_shape(bx_outlines) +
   )
 ```
 
+### NTAs where folks live and work in the same neighborhood
+```{r, message=FALSE}
+bx_intra_desires <- intra_nta_desires %>%
+  filter(boro == "BX")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bx_intra_desires) +
+  tm_polygons(
+    col = "S000",
+    title = "Number of workers",
+  ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
 ## Brooklyn
 
 ### Origins
@@ -320,6 +366,24 @@ tm_shape(bn_outlines) +
       col = "#212121",
       lwd = "S000",
       ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
+### NTAs where folks live and work in the same neighborhood
+```{r, message=FALSE}
+bn_intra_desires <- intra_nta_desires %>%
+  filter(boro == "BK")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bn_intra_desires) +
+  tm_polygons(
+    col = "S000",
+    title = "Number of workers",
+  ) +
   tm_layout(
     legend.outside = TRUE,
     legend.text.size = 0.55,
@@ -390,25 +454,67 @@ tm_shape(qn_outlines) +
       ) +
   tm_layout(
     legend.outside = TRUE,
+    legend.text.size = 0.5,
+  )
+```
+
+### NTAs where folks live and work in the same neighborhood
+```{r, message=FALSE}
+qn_intra_desires <- intra_nta_desires %>%
+  filter(boro == "QN")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(qn_intra_desires) +
+  tm_polygons(
+    col = "S000",
+    title = "Number of workers",
+  ) +
+  tm_layout(
+    legend.outside = TRUE,
     legend.text.size = 0.55,
   )
 ```
 
-## Total Trips summary
+## Trips summary
+
 ### Manhattan
+#### Total
 ```{r}
 sum(filter(intra_borough_nta_ods, boro=="MN")$S000)
 ```
+
+#### Same NTA
+```{r}
+sum(filter(intra_nta_desires, boro=="MN")$S000)
+```
 ### Bronx
+#### Total
 ```{r}
 sum(filter(intra_borough_nta_ods, boro=="BX")$S000)
 ```
 
+#### Same NTA
+```{r}
+sum(filter(intra_nta_desires, boro=="BX")$S000)
+```
+
 ### Brooklyn
+#### Total
 ```{r}
 sum(filter(intra_borough_nta_ods, boro=="BK")$S000)
+```
+
+#### Same NTA
+```{r}
+sum(filter(intra_nta_desires, boro=="BK")$S000)
 ```
 ### Queens
 ```{r}
 sum(filter(intra_borough_nta_ods, boro=="QN")$S000)
+```
+
+#### Same NTA
+```{r}
+sum(filter(intra_nta_desires, boro=="QN")$S000)
 ```
