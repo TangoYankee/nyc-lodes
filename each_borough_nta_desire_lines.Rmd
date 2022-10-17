@@ -1,0 +1,67 @@
+# Desire lines within each NYC Borough between their NTAs
+```{r, message=FALSE }
+library(sf)
+library(geojsonsf)
+library(tidyverse)
+library(tmap)
+```
+
+Import data from files
+- NYC NTA Polygons
+- NYC NTA to tract equivalence
+- NYS OD
+```{r, message = FALSE}
+options(scipen = 999)
+nyc_nta_geo <- geojson_sf('./data/nyc_nta_2010.geojson')
+nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
+ny_origin_dest <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
+
+Define places of interest
+```{r, message = FALSE}
+boros <- c("Bronx", "Brooklyn", "Manhattan", "Queens")
+county_codes <- c("005", "047", "061", "081")
+parks <- c("BX10", "BX99", "BK99", "MN99", "QN99")
+```
+
+Create equivalency for counties and tracts with NTAs
+```{r, message = FALSE}
+county_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
+  filter(!(nta_code %in% parks)) %>%
+  mutate(county_tract = str_c(`county_code`, `census_tract`)) %>%
+  select("county_tract", "nta_code")
+```
+
+Reduce NYS origin destination data to only ntas of interest
+```{r, message = FALSE}
+nta_ods <- ny_origin_dest %>%
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) %in% county_codes &
+      str_sub(as.character(h_geocode), 3, 5) %in% county_codes
+    ) %>%
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  select(h_county_tract, w_county_tract, S000) %>%
+  left_join(county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
+
+Look exclusively at trips that start and end in the same Borough
+```{r, message=FALSE}
+intra_borough_nta_ods <- nta_ods %>%
+  mutate(h_boro = str_sub(h_nta_code, 1, 2)) %>%
+  mutate(w_boro = str_sub(w_nta_code, 1, 2)) %>%
+  filter(h_boro == w_boro) %>% 
+  select(!w_boro)  %>%
+  rename(boro = h_boro)
+```
