@@ -120,6 +120,7 @@ intra_boro_od_lines <- intra_borough_nta_ods %>%
   select("od","boro", "S000", "geometry") %>%
   st_as_sf()
 ```
+
 ## Manhattan
 
 ### Origins
@@ -140,6 +141,7 @@ tm_shape(mn_origins) +
     legend.outside = TRUE
   )
 ```
+
 
 ### Desinations
 ```{r, message = FALSE}
@@ -178,6 +180,210 @@ tm_shape(mn_outlines) +
     title = "Borough",
   ) +
   tm_shape(mn_od_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
+## Bronx
+
+### Origins
+```{r, message = FALSE}
+bx_origins <- intra_borough_origins %>%
+  filter(BoroName == "Bronx")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(bx_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents"
+  ) +
+  tm_layout(
+    title = "Most popular origins in the Bronx",
+    legend.outside = TRUE
+  )
+```
+
+### Desinations
+```{r, message = FALSE}
+bx_dests <- intra_borough_dests %>%
+  filter(BoroName == "Bronx")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(bx_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers"
+  ) +
+  tm_layout(
+    title = "Most popular destinations in the Bronx",
+    legend.outside = TRUE
+  )
+```
+
+### Desire lines
+```{r, message=FALSE}
+bx_outlines <- nta_polys %>%
+  filter(BoroName == "Bronx")
+```
+
+```{r, message = FALSE}
+bx_od_lines <- intra_boro_od_lines %>%
+  filter(boro == "BX")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bx_outlines) +
+  tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  ) +
+  tm_shape(bx_od_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
+## Brooklyn
+
+### Origins
+```{r, message = FALSE}
+bn_origins <- intra_borough_origins %>%
+  filter(BoroName == "Brooklyn")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(bn_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents"
+  ) +
+  tm_layout(
+    title = "Most popular origins in Brooklyn",
+    legend.outside = TRUE
+  )
+```
+
+### Desinations
+```{r, message = FALSE}
+bn_dests <- intra_borough_dests %>%
+  filter(BoroName == "Brooklyn")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(bn_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers"
+  ) +
+  tm_layout(
+    title = "Most popular destinations in Brooklyn",
+    legend.outside = TRUE
+  )
+```
+
+### Desire lines
+```{r, message=FALSE}
+bn_outlines <- nta_polys %>%
+  filter(BoroName == "Brooklyn")
+```
+
+```{r, message = FALSE}
+bn_od_lines <- intra_boro_od_lines %>%
+  filter(boro == "BK")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bn_outlines) +
+  tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  ) +
+  tm_shape(bn_od_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
+
+## Queens
+
+### Origins
+```{r, message = FALSE}
+qn_origins <- intra_borough_origins %>%
+  filter(BoroName == "Queens")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(qn_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents"
+  ) +
+  tm_layout(
+    title = "Most popular origins in Queens",
+    legend.outside = TRUE
+  )
+```
+
+### Desinations
+```{r, message = FALSE}
+qn_dests <- intra_borough_dests %>%
+  filter(BoroName == "Queens")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(qn_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers"
+  ) +
+  tm_layout(
+    title = "Most popular destinations in Queens",
+    legend.outside = TRUE
+  )
+```
+
+### Desire lines
+```{r, message=FALSE}
+qn_outlines <- nta_polys %>%
+  filter(BoroName == "Queens")
+```
+
+```{r, message = FALSE}
+qn_od_lines <- intra_boro_od_lines %>%
+  filter(boro == "QN")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(qn_outlines) +
+  tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  ) +
+  tm_shape(qn_od_lines) +
     tm_lines(
       col = "#212121",
       lwd = "S000",
