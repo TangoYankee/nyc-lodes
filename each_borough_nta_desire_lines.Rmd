@@ -60,8 +60,10 @@ nta_ods <- ny_origin_dest %>%
 Look exclusively at trips that start and end in the same Borough
 ```{r, message=FALSE}
 intra_borough_nta_ods <- nta_ods %>%
-  mutate(h_boro = str_sub(h_nta_code, 1, 2)) %>%
-  mutate(w_boro = str_sub(w_nta_code, 1, 2))
+  filter(
+    str_sub(h_nta_code, 1, 2) == str_sub(w_nta_code, 1, 2)
+    ) %>% 
+  mutate(boro = str_sub(h_nta_code, 1, 2))
 ```
 
 Reduce NYC geography to NTAs of interest
@@ -105,22 +107,83 @@ intra_borough_origins <- intra_borough_nta_ods %>%
 ```
 
 Define desire lines for origins and destinations
+- Origin and Destination NTA must be different
 ```{r, message=FALSE}
 intra_boro_od_lines <- intra_borough_nta_ods %>%
+  filter(h_nta_code != w_nta_code) %>%
   left_join(nta_points, c("h_nta_code" = "NTACode")) %>%
   rename(h_geometry = geometry) %>%
   left_join(nta_points, c("w_nta_code" = "NTACode")) %>%
   rename(w_geometry = geometry) %>%
   mutate(geometry = st_union(h_geometry, w_geometry)) %>%
   mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
-  select("od", "S000", "geometry") %>%
+  select("od","boro", "S000", "geometry") %>%
   st_as_sf()
 ```
 ## Manhattan
 
 ### Origins
-Filter down to Manhattan trips
 ```{r, message = FALSE}
 mn_origins <- intra_borough_origins %>%
   filter(BoroName == "Manhattan")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(mn_origins) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Residents"
+  ) +
+  tm_layout(
+    title = "Most popular origins Manhattan",
+    legend.outside = TRUE
+  )
+```
+
+### Desinations
+```{r, message = FALSE}
+mn_dests <- intra_borough_dests %>%
+  filter(BoroName == "Manhattan")
+```
+
+```{r, out.width="100%", fig.align = "center"}
+tm_shape(mn_dests) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers"
+  ) +
+  tm_layout(
+    title = "Most popular destinations in Manhattan",
+    legend.outside = TRUE
+  )
+```
+
+### Desire lines
+```{r, message=FALSE}
+mn_outlines <- nta_polys %>%
+  filter(BoroName == "Manhattan")
+```
+
+```{r, message = FALSE}
+mn_od_lines <- intra_boro_od_lines %>%
+  filter(boro == "MN")
+```
+
+```{r, out.width="100%", fig.align='center'}
+tm_shape(mn_outlines) +
+  tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  ) +
+  tm_shape(mn_od_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
 ```
