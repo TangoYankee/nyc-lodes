@@ -30,6 +30,12 @@ bk_tract_borders <- nyc_tract_borders %>%
   select(c("CT2010", "geometry"))
 ```
 
+Find points on surface of Brooklyn tracts
+```{r, message=FALSE}
+bk_tract_points <- bk_tract_borders %>%
+  mutate(geometry = st_point_on_surface(geometry))
+```
+
 Reduce NYS origin destination data to only census tracts within Brooklyn
 ```{r, message = FALSE}
 bk_ods <- ny_origin_dest %>%
@@ -85,6 +91,20 @@ pop_intra_od <- bk_ods %>%
   select("od", "tract", "S000", "geometry") %>%
   st_as_sf()
 ```
+
+Define desire lines for commutes that go from one tract to another.
+```{r, message=FALSE}
+bk_desire_lines <- bk_ods %>%
+  filter(h_tract != w_tract) %>%
+  left_join(bk_tract_points, c("h_tract" = "CT2010")) %>%
+  rename(h_geometry = geometry) %>%
+  left_join(bk_tract_points, c("w_tract" = "CT2010")) %>%
+  rename(w_geometry = geometry) %>%
+  mutate(geometry = st_union(h_geometry, w_geometry)) %>%
+  mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
+  select("od", "S000", "geometry") %>%
+  st_as_sf()
+```
 ### Utility functions
 
 ## Most popular tracts for folks to work and live within Brooklyn
@@ -127,5 +147,19 @@ tm_shape(pop_work_tracts) +
   )
 ```
 
-
 ## Most popular desire lines for folks to commute from one to tract to another
+```{r, out.width="100%", fig.align='center'}
+tm_shape(bk_tract_borders) +
+  tm_polygons(
+    col = "#E4E4E4",
+  ) +
+  tm_shape(bk_desire_lines) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+```
