@@ -2,6 +2,28 @@
 ## Folks that live and work within brooklyn
 
 ## Pre-process data
+Import required libraries
+```{r, message=FALSE}
+library(sf)
+library(geojsonsf)
+library(tidyverse)
+library(tmap)
+```
+
+Define places of interest
+```{r, message=FALSE}
+boro_name = "Brooklyn"
+county_code = "047"
+```
+
+Import required data
+```{r, message=FALSE}
+options(scipen = 999)
+nyc_tract_borders <- geojson_sf('./data/nyc_2010_tract_borders.geojson')
+ny_origin_dest <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
+
+
 ### Utility functions
 
 ## Most popular tracts for folks to work and live within Brooklyn
