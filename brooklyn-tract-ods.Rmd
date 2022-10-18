@@ -1,0 +1,11 @@
+# Desrired workplace and residential census tracts for Brooklyn, NY
+## Folks that live and work within brooklyn
+
+## Pre-process data
+### Utility functions
+
+## Most popular tracts for folks to work and live within Brooklyn
+
+## Most popular tracts for folks to work and live within the same tract
+
+## Most popular desire lines for folks to commute from one to tract to another
