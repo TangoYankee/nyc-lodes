@@ -75,6 +75,16 @@ pop_home_tracts <- bk_ods %>%
   left_join(bk_tract_borders, c("h_tract"= "CT2010")) %>%
   st_as_sf()
 ```
+
+Define most intra-tract home and work
+```{r, message=TRUE}
+pop_intra_od <- bk_ods %>%
+  filter(h_tract == w_tract) %>%
+  rename(tract = h_tract) %>%
+  left_join(bk_tract_borders, c("tract" = "CT2010")) %>%
+  select("od", "tract", "S000", "geometry") %>%
+  st_as_sf()
+```
 ### Utility functions
 
 ## Most popular tracts for folks to work and live within Brooklyn
@@ -104,5 +114,18 @@ tmap_arrange(pop_work_map, pop_home_map)
 ```
 
 ## Most popular tracts for folks to work and live within the same tract
+```{r,  out.width="100%", fig.align='center'}
+tm_shape(pop_work_tracts) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Employers",
+  ) + 
+  tm_layout(
+    title = "Work Tracts",
+    legend.outside = TRUE
+  )
+```
+
 
 ## Most popular desire lines for folks to commute from one to tract to another
