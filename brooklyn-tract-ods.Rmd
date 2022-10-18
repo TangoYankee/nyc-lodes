@@ -63,20 +63,44 @@ pop_work_tracts <- bk_ods %>%
   st_as_sf()
 ```
 
+Define most popular home tracts
+```{r, message=FALSE}
+pop_home_tracts <- bk_ods %>%
+  group_by(h_tract) %>%
+  summarise(
+    h_tract,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(bk_tract_borders, c("h_tract"= "CT2010")) %>%
+  st_as_sf()
+```
 ### Utility functions
 
 ## Most popular tracts for folks to work and live within Brooklyn
 ```{r,  out.width="100%", fig.align='center'}
-tm_shape(pop_work_tracts) +
+pop_work_map <- tm_shape(pop_work_tracts) +
   tm_polygons(
     col = "S000",
     style = "jenks",
     title = "Employers",
   ) + 
   tm_layout(
-    title = "Most popular work tracts in Brooklyn",
+    title = "Work Tracts",
     legend.outside = TRUE
   )
+pop_home_map <- tm_shape(pop_home_tracts) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Homes",
+  ) + 
+  tm_layout(
+    title = "Residential Tracts",
+    legend.outside = TRUE
+  )
+
+tmap_arrange(pop_work_map, pop_home_map)
 ```
 
 ## Most popular tracts for folks to work and live within the same tract
