@@ -105,9 +105,8 @@ bk_desire_lines <- bk_ods %>%
   select("od", "S000", "geometry") %>%
   st_as_sf()
 ```
-### Utility functions
 
-## Most popular tracts for folks to work and live within Brooklyn
+## Most popular tracts to work and live within Brooklyn
 ```{r,  out.width="100%", fig.align='center'}
 pop_work_map <- tm_shape(pop_work_tracts) +
   tm_polygons(
@@ -139,10 +138,10 @@ tm_shape(pop_work_tracts) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "Employers",
+    title = "Count",
   ) + 
   tm_layout(
-    title = "Work Tracts",
+    title = "Work and Live Tracts",
     legend.outside = TRUE
   )
 ```
