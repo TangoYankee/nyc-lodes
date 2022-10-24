@@ -14,6 +14,7 @@ Define places of interest
 ```{r, message=FALSE}
 boro_name = "Brooklyn"
 county_code = "047"
+parks <- "BK99"
 ```
 
 Import required data
@@ -21,6 +22,92 @@ Import required data
 options(scipen = 999)
 nyc_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson')
 nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
-ny_od_2 <- read_csv("./data/ny_od_main_JT00_2002.csv")
+ny_od_02 <- read_csv("./data/ny_od_main_JT00_2002.csv")
 ny_od_19 <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
+
+Create equivalency for Brooklyn tracts and ntas
+```{r, message = FALSE}
+bk_tract_nta_equiv <- nyc_tract_nta_equiv %>%
+  filter(borough_name == boro_name & nta_code != parks) %>%
+  mutate(tract = `census_tract`) %>%
+  select("tract", "nta_code")
+```
+
+Reduce NYC nta borders to Brooklyn
+```{r, message = FALSE}
+bk_nta_borders <- nyc_nta_borders %>%
+  filter(BoroName == boro_name & NTACode != parks) %>%
+  select(c("NTACode", "geometry"))
+```
+
+Find points on surface of Brooklyn ntas
+```{r, message=FALSE}
+bk_nta_points <- bk_nta_borders %>%
+  mutate(geometry = st_point_on_surface(geometry))
+```
+Reduce 2019 NYS origin destination data to trips that start and end in Brooklyn
+```{r, message = FALSE}
+bk_nta_od_19 <- ny_od_19 %>%
+  # trip starts and ends in Brooklyn
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) == county_code &
+      str_sub(as.character(h_geocode), 3, 5) == county_code
+    ) %>%
+  # extract the tract. it's already known to be in Brooklyn
+  mutate(w_tract = str_sub(as.character(w_geocode), 6, 11)) %>%
+  mutate(h_tract = str_sub(as.character(h_geocode), 6, 11)) %>%
+  # only interested in home and work tracts, and the number of total trips
+  select(h_tract, w_tract, S000) %>%
+  # map home tract to NTA
+  left_join(bk_tract_nta_equiv, c("h_tract" = "tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  # map work tract to NTA
+  left_join(bk_tract_nta_equiv, c("w_tract" = "tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  # remove parks
+  filter(h_nta_code != parks & w_nta_code != parks) %>%
+  # create key to identify trip route
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  # count number of trips for each route, removing duplicate entries
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
+```
+
+Reduce 2002 NYS origin destination data to trips that start and end in Brooklyn
+```{r, message = FALSE}
+bk_nta_od_02 <- ny_od_02 %>%
+  # trip starts and ends in Brooklyn
+  filter(
+    str_sub(as.character(w_geocode), 3, 5) == county_code &
+      str_sub(as.character(h_geocode), 3, 5) == county_code
+    ) %>%
+  # extract the tract. it's already known to be in Brooklyn
+  mutate(w_tract = str_sub(as.character(w_geocode), 6, 11)) %>%
+  mutate(h_tract = str_sub(as.character(h_geocode), 6, 11)) %>%
+  # only interested in home and work tracts, and the number of total trips
+  select(h_tract, w_tract, S000) %>%
+  # map home tract to NTA
+  left_join(bk_tract_nta_equiv, c("h_tract" = "tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  # map work tract to NTA
+  left_join(bk_tract_nta_equiv, c("w_tract" = "tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  # remove parks
+  filter(h_nta_code != parks & w_nta_code != parks) %>%
+  # create key to identify trip route
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  # count number of trips for each route, removing duplicate entries
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  unique()
 ```
