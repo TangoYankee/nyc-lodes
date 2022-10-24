@@ -1,0 +1,26 @@
+# Origins and Destinations Brooklyn NTAs in 2002 and 2010, uncorrected for tract changes
+
+## Preprocess Data
+
+Import necessary files
+```{r, message=FALSE }
+library(sf)
+library(geojsonsf)
+library(tidyverse)
+library(tmap)
+```
+
+Define places of interest
+```{r, message=FALSE}
+boro_name = "Brooklyn"
+county_code = "047"
+```
+
+Import required data
+```{r, message=FALSE}
+options(scipen = 999)
+nyc_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson')
+nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
+ny_od_2 <- read_csv("./data/ny_od_main_JT00_2002.csv")
+ny_od_19 <- read_csv("./data/ny_od_main_JT00_2019.csv")
+```
