@@ -162,6 +162,27 @@ bk_nta_origin_02 <- bk_nta_od_02 %>%
   left_join(bk_nta_borders, c("h_nta_code"= "NTACode")) %>%
   st_as_sf()
 ```
+
+Define most intra-tract home and work for 2019
+```{r, message=TRUE}
+bk_intra_nta_od_19 <- bk_nta_od_19 %>%
+  filter(h_nta_code == w_nta_code) %>%
+  rename(nta_code = h_nta_code) %>%
+  left_join(bk_nta_borders, c("nta_code" = "NTACode")) %>%
+  select("od", "nta_code", "S000", "geometry") %>%
+  st_as_sf()
+```
+
+Define most intra-tract home and work for 2002
+```{r, message=TRUE}
+bk_intra_nta_od_02 <- bk_nta_od_02 %>%
+  filter(h_nta_code == w_nta_code) %>%
+  rename(nta_code = h_nta_code) %>%
+  left_join(bk_nta_borders, c("nta_code" = "NTACode")) %>%
+  select("od", "nta_code", "S000", "geometry") %>%
+  st_as_sf()
+```
+
 ## Most popular tracts to work in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
 bk_dest_dist_02 <- tm_shape(bk_nta_dest_02) +
@@ -212,4 +233,31 @@ bk_origin_dist_19 <- tm_shape(bk_nta_origin_19) +
   )
 
 tmap_arrange(bk_origin_dist_02, bk_origin_dist_19)
+```
+
+## Most popular ntas for folks to work and live within the same nta, 2002 and 2019
+```{r,  out.width="100%", fig.align='center'}
+bk_intra_nta_od_dist_02 <- tm_shape(bk_intra_nta_od_02) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Count",
+  ) + 
+  tm_layout(
+    title = "2002",
+    legend.outside = TRUE
+  )
+
+bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Count",
+  ) + 
+  tm_layout(
+    title = "2019",
+    legend.outside = TRUE
+  )
+
+tmap_arrange(bk_intra_nta_od_dist_02, bk_intra_nta_od_dist_19)
 ```
