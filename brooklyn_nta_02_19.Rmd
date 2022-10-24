@@ -163,7 +163,7 @@ bk_nta_origin_02 <- bk_nta_od_02 %>%
   st_as_sf()
 ```
 
-Define most intra-tract home and work for 2019
+Define intra-tract trips for 2019
 ```{r, message=TRUE}
 bk_intra_nta_od_19 <- bk_nta_od_19 %>%
   filter(h_nta_code == w_nta_code) %>%
@@ -173,13 +173,41 @@ bk_intra_nta_od_19 <- bk_nta_od_19 %>%
   st_as_sf()
 ```
 
-Define most intra-tract home and work for 2002
+Define intra-tract trips for 2002
 ```{r, message=TRUE}
 bk_intra_nta_od_02 <- bk_nta_od_02 %>%
   filter(h_nta_code == w_nta_code) %>%
   rename(nta_code = h_nta_code) %>%
   left_join(bk_nta_borders, c("nta_code" = "NTACode")) %>%
   select("od", "nta_code", "S000", "geometry") %>%
+  st_as_sf()
+```
+
+Define desire lines for commutes that go from one nta to another in 2019
+```{r, message=FALSE}
+bk_desire_lines_19 <- bk_nta_od_19 %>%
+  filter(h_nta_code != w_nta_code) %>%
+  left_join(bk_nta_points, c("h_nta_code" = "NTACode")) %>%
+  rename(h_geometry = geometry) %>%
+  left_join(bk_nta_points, c("w_nta_code" = "NTACode")) %>%
+  rename(w_geometry = geometry) %>%
+  mutate(geometry = st_union(h_geometry, w_geometry)) %>%
+  mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
+  select("od", "S000", "geometry") %>%
+  st_as_sf()
+```
+
+Define desire lines for commutes that go from one nta to another in 2002
+```{r, message=FALSE}
+bk_desire_lines_02 <- bk_nta_od_02 %>%
+  filter(h_nta_code != w_nta_code) %>%
+  left_join(bk_nta_points, c("h_nta_code" = "NTACode")) %>%
+  rename(h_geometry = geometry) %>%
+  left_join(bk_nta_points, c("w_nta_code" = "NTACode")) %>%
+  rename(w_geometry = geometry) %>%
+  mutate(geometry = st_union(h_geometry, w_geometry)) %>%
+  mutate(geometry = st_cast(geometry, "LINESTRING")) %>%
+  select("od", "S000", "geometry") %>%
   st_as_sf()
 ```
 
@@ -260,4 +288,37 @@ bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
   )
 
 tmap_arrange(bk_intra_nta_od_dist_02, bk_intra_nta_od_dist_19)
+```
+
+## Most popular desire lines for folks to commute from one to tract to another
+```{r, out.width="100%", fig.align='center'}
+bk_desire_lines_dist_02 <- tm_shape(bk_nta_borders) +
+  tm_polygons(
+    col = "#e4e4e4",
+  ) +
+  tm_shape(bk_desire_lines_02) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+
+bk_desire_lines_dist_19 <- tm_shape(bk_nta_borders) +
+  tm_polygons(
+    col = "#e4e4e4",
+  ) +
+  tm_shape(bk_desire_lines_19) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+
+tmap_arrange(bk_desire_lines_dist_02, bk_desire_lines_dist_19)
 ```
