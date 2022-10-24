@@ -137,6 +137,31 @@ bk_nta_dest_02 <- bk_nta_od_02 %>%
   st_as_sf()
 ```
 
+Define most popular home ntas in 2019
+```{r, message=FALSE}
+bk_nta_origin_19 <- bk_nta_od_19 %>%
+  group_by(h_nta_code) %>%
+  summarise(
+    h_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(bk_nta_borders, c("h_nta_code"= "NTACode")) %>%
+  st_as_sf()
+```
+
+Define most popular home ntas in 2002
+```{r, message=FALSE}
+bk_nta_origin_02 <- bk_nta_od_02 %>%
+  group_by(h_nta_code) %>%
+  summarise(
+    h_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(bk_nta_borders, c("h_nta_code"= "NTACode")) %>%
+  st_as_sf()
+```
 ## Most popular tracts to work in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
 bk_dest_dist_02 <- tm_shape(bk_nta_dest_02) +
@@ -161,4 +186,30 @@ bk_dest_dist_19 <- tm_shape(bk_nta_dest_19) +
   )
 
 tmap_arrange(bk_dest_dist_02, bk_dest_dist_19)
+```
+
+## Most popular tracts to work in Brooklyn across 2002 and 2019
+```{r,  out.width="100%", fig.align='center'}
+bk_origin_dist_02 <- tm_shape(bk_nta_origin_02) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "2002",
+  ) + 
+  tm_layout(
+    title = "Home Tracts",
+    legend.outside = TRUE
+  )
+bk_origin_dist_19 <- tm_shape(bk_nta_origin_19) +
+  tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "2019",
+  ) + 
+  tm_layout(
+    title = "Home Tracts",
+    legend.outside = TRUE
+  )
+
+tmap_arrange(bk_origin_dist_02, bk_origin_dist_19)
 ```
