@@ -134,7 +134,7 @@ tmap_arrange(pop_work_map, pop_home_map)
 
 ## Most popular tracts for folks to work and live within the same tract
 ```{r,  out.width="100%", fig.align='center'}
-tm_shape(pop_work_tracts) +
+tm_shape(pop_intra_od) +
   tm_polygons(
     col = "S000",
     style = "jenks",
