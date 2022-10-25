@@ -15,5 +15,8 @@ tm_shape(boi_borders) +
   ) +
   tm_shape(boi_subway_lines) +
   tm_lines(
-    col = "rt_symbol"
+    col = "rt_symbol",
+    title.col = "Subway Lines"
+  ) + tm_layout(
+    legend.outside = TRUE
   )
