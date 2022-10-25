@@ -9,6 +9,8 @@ boi_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
 boi_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
   st_intersection(boi_borders)
 
+write(boi_subway_lines, "./data/bk_subway_lines.geojson")
+
 tm_shape(boi_borders) +
   tm_polygons(
     col = "#e2e2e2",
