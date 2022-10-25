@@ -18,7 +18,7 @@ They are omitted from the main repository to reduce project size.
   - [Download NTA GeoJSON](https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Neighborhood_Tabulation_Areas_2010/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson)
 - NYC subway line geographic data. [NYC Open Data Portal](https://data.cityofnewyork.us/Transportation/Subway-Lines/3qz8-muuu)
 - NYC 2010 Census blocks [Download geojson](https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Census_Blocks_for_2010_US_Census/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson)
-- NYC 2010 Census Tracts [Download Geojson](https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Census_Tracts_for_2010_US_Census/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson)
+-NYC [Borough Boundaries](https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm)
 
 ## Generated Data Files
 The `create_origin_dest_data.R` script will use the census data to generate the custom `ny_od_cw_tract_coord.csv` file.
