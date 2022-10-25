@@ -9,7 +9,10 @@ boi_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
 boi_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
   st_intersection(boi_borders)
 
+## Writing to file appears to work
+## But then there is an error on reading the file back into R
 write(boi_subway_lines, "./data/bk_subway_lines.geojson")
+tst_lines <- geojson_sf(('./data/bk_subway_lines.geojson'))
 
 tm_shape(boi_borders) +
   tm_polygons(
@@ -22,3 +25,5 @@ tm_shape(boi_borders) +
   ) + tm_layout(
     legend.outside = TRUE
   )
+
+
