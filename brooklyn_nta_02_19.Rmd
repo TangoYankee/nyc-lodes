@@ -1,8 +1,13 @@
-# Origins and Destinations Brooklyn NTAs in 2002 and 2010, uncorrected for tract changes
+# Origins and Destinations Brooklyn NTAs in 2002 and 2019, uncorrected for tract changes
+*Tract correction refers to the act accounting for the tract change process
+that occurs with each census, to account for shifting populations. NTAs follow 
+the outlines of tracts, consequently they are affected by census tract changes.
+For this preliminary review, the NTAs have not been corrected to account for
+tract changes from the 2000 to the 2010 census.
 
 ## Preprocess Data
 
-Import necessary files
+Import necessary libraries
 ```{r, message=FALSE }
 library(sf)
 library(geojsonsf)
@@ -19,7 +24,7 @@ parks <- "BK99"
 
 Import required data
 ```{r, message=FALSE}
-options(scipen = 999)
+options(scipen = 999) # turn of scientific notation for coordinates
 nyc_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson')
 nyc_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx')
 ny_od_02 <- read_csv("./data/ny_od_main_JT00_2002.csv")
@@ -41,6 +46,7 @@ bk_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
 bk_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
   st_intersection(bk_borders)
 ```
+Create template map layer of brooklyn subway lines
 ```{r, message = FALSE}
 bk_subway_lines_map <- tm_shape(bk_subway_lines) +
   tm_lines(
@@ -227,7 +233,7 @@ bk_desire_lines_02 <- bk_nta_od_02 %>%
   st_as_sf()
 ```
 
-## Most popular tracts to work in Brooklyn across 2002 and 2019
+## Most popular NTAs to work in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
 bk_dest_dist_02 <- tm_shape(bk_nta_dest_02) +
   tm_polygons(
@@ -255,28 +261,31 @@ bk_dest_dist_19 <- tm_shape(bk_nta_dest_19) +
 tmap_arrange(bk_dest_dist_02, bk_dest_dist_19)
 ```
 
-## Most popular tracts to work in Brooklyn across 2002 and 2019
+## Most popular NTAs to Live in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
 bk_origin_dist_02 <- tm_shape(bk_nta_origin_02) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "2002",
+    title = "Home",
   ) + 
   tm_layout(
-    title = "Home Tracts",
+    title = "2002",
     legend.outside = TRUE
-  )
+  ) + 
+  bk_subway_lines_map
+
 bk_origin_dist_19 <- tm_shape(bk_nta_origin_19) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "2019",
+    title = "Home",
   ) + 
   tm_layout(
-    title = "Home Tracts",
+    title = "2019",
     legend.outside = TRUE
-  )
+  ) + 
+  bk_subway_lines_map
 
 tmap_arrange(bk_origin_dist_02, bk_origin_dist_19)
 ```
@@ -292,7 +301,8 @@ bk_intra_nta_od_dist_02 <- tm_shape(bk_intra_nta_od_02) +
   tm_layout(
     title = "2002",
     legend.outside = TRUE
-  )
+  ) +
+  bk_subway_lines_map
 
 bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
   tm_polygons(
@@ -303,17 +313,25 @@ bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
   tm_layout(
     title = "2019",
     legend.outside = TRUE
-  )
+  ) +
+  bk_subway_lines_map
 
 tmap_arrange(bk_intra_nta_od_dist_02, bk_intra_nta_od_dist_19)
 ```
 
-## Most popular desire lines for folks to commute from one to tract to another
+## Most popular desire lines for folks to commute from one Brooklyn NTA to another
 ```{r, out.width="100%", fig.align='center'}
+bk_mono_subway_lines_map <- tm_shape(bk_subway_lines) +
+  tm_lines(
+    col = "#ff0000",
+    lwd = 0.25,
+  )
+
 bk_desire_lines_dist_02 <- tm_shape(bk_nta_borders) +
   tm_polygons(
     col = "#e4e4e4",
   ) +
+  bk_mono_subway_lines_map +
   tm_shape(bk_desire_lines_02) +
     tm_lines(
       col = "#212121",
@@ -328,10 +346,12 @@ bk_desire_lines_dist_19 <- tm_shape(bk_nta_borders) +
   tm_polygons(
     col = "#e4e4e4",
   ) +
+  bk_mono_subway_lines_map +
   tm_shape(bk_desire_lines_19) +
     tm_lines(
       col = "#212121",
       lwd = "S000",
+      alpha = 0.9
       ) +
   tm_layout(
     legend.outside = TRUE,
