@@ -34,6 +34,22 @@ bk_tract_nta_equiv <- nyc_tract_nta_equiv %>%
   select("tract", "nta_code")
 ```
 
+Find Brooklyn subway lines
+```{r, message = FALSE}
+bk_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
+  filter(boro_name == "Brooklyn")
+bk_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
+  st_intersection(bk_borders)
+```
+```{r, message = FALSE}
+bk_subway_lines_map <- tm_shape(bk_subway_lines) +
+  tm_lines(
+    col = "rt_symbol",
+    title.col = "Subway Lines",
+    lwd = 1.5,
+  )
+```
+
 Reduce NYC nta borders to Brooklyn
 ```{r, message = FALSE}
 bk_nta_borders <- nyc_nta_borders %>%
@@ -217,22 +233,24 @@ bk_dest_dist_02 <- tm_shape(bk_nta_dest_02) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "2002",
+    title = "Work",
   ) + 
   tm_layout(
-    title = "Work Tracts",
+    title = "2002",
     legend.outside = TRUE
-  )
+  ) +
+  bk_subway_lines_map
 bk_dest_dist_19 <- tm_shape(bk_nta_dest_19) +
   tm_polygons(
     col = "S000",
     style = "jenks",
-    title = "2019",
+    title = "Work",
   ) + 
   tm_layout(
-    title = "Work Tracts",
+    title = "2019",
     legend.outside = TRUE
-  )
+  ) +
+  bk_subway_lines_map
 
 tmap_arrange(bk_dest_dist_02, bk_dest_dist_19)
 ```
