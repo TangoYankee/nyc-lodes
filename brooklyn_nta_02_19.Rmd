@@ -46,8 +46,8 @@ bk_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
 bk_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
   st_intersection(bk_borders)
 bk_road_lines <- geojson_sf('./data/DCM_ArterialsMajorStreets.geojson') %>%
-  filter(borough == boi_name & route_stat == "Existing") %>%
-  st_intersection(boi_borders)
+  filter(borough == "Brooklyn" & route_stat == "Existing") %>%
+  st_intersection(bk_borders)
 ```
 Create template map layer of brooklyn subway lines and road lines
 ```{r, message = FALSE}
@@ -281,7 +281,7 @@ tmap_arrange(
   ncol = 2,
   nrow = 2
   )
-  ```
+```
 
 ## Most popular NTAs to Live in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
