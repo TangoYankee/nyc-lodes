@@ -39,14 +39,17 @@ bk_tract_nta_equiv <- nyc_tract_nta_equiv %>%
   select("tract", "nta_code")
 ```
 
-Find Brooklyn subway lines
+Find Brooklyn subway lines and relevant roads
 ```{r, message = FALSE}
 bk_borders <- geojson_sf('./data/boro_boundaries.geojson')%>%
   filter(boro_name == "Brooklyn")
 bk_subway_lines <- geojson_sf('./data/subway_lines.geojson') %>%
   st_intersection(bk_borders)
+bk_road_lines <- geojson_sf('./data/DCM_ArterialsMajorStreets.geojson') %>%
+  filter(borough == boi_name & route_stat == "Existing") %>%
+  st_intersection(boi_borders)
 ```
-Create template map layer of brooklyn subway lines
+Create template map layer of brooklyn subway lines and road lines
 ```{r, message = FALSE}
 bk_subway_lines_map <- tm_shape(bk_subway_lines) +
   tm_lines(
@@ -54,7 +57,17 @@ bk_subway_lines_map <- tm_shape(bk_subway_lines) +
     title.col = "Subway Lines",
     lwd = 1.5,
   )
+
+bk_road_lines_map <- tm_shape(bk_road_lines) +
+  tm_lines(
+    col = "route_type",
+    title.col = "Major Roads",
+    lwd = 1.5,
+    alpha = 0.9
+  )
 ```
+
+
 
 Reduce NYC nta borders to Brooklyn
 ```{r, message = FALSE}
@@ -244,8 +257,8 @@ bk_dest_dist_02 <- tm_shape(bk_nta_dest_02) +
   tm_layout(
     title = "2002",
     legend.outside = TRUE
-  ) +
-  bk_subway_lines_map
+  )
+
 bk_dest_dist_19 <- tm_shape(bk_nta_dest_19) +
   tm_polygons(
     col = "S000",
@@ -255,11 +268,20 @@ bk_dest_dist_19 <- tm_shape(bk_nta_dest_19) +
   tm_layout(
     title = "2019",
     legend.outside = TRUE
-  ) +
-  bk_subway_lines_map
-
-tmap_arrange(bk_dest_dist_02, bk_dest_dist_19)
-```
+  )
+bk_dest_dist_02_sub <- bk_dest_dist_02 + bk_subway_lines_map
+bk_dest_dist_02_road <- bk_dest_dist_02 + bk_road_lines_map
+bk_dest_dist_19_sub <- bk_dest_dist_19 + bk_subway_lines_map
+bk_dest_dist_19_road <- bk_dest_dist_19 + bk_road_lines_map
+tmap_arrange(
+  bk_dest_dist_02_sub,
+  bk_dest_dist_19_sub,
+  bk_dest_dist_02_road,
+  bk_dest_dist_19_road,
+  ncol = 2,
+  nrow = 2
+  )
+  ```
 
 ## Most popular NTAs to Live in Brooklyn across 2002 and 2019
 ```{r,  out.width="100%", fig.align='center'}
@@ -301,8 +323,7 @@ bk_intra_nta_od_dist_02 <- tm_shape(bk_intra_nta_od_02) +
   tm_layout(
     title = "2002",
     legend.outside = TRUE
-  ) +
-  bk_subway_lines_map
+  )
 
 bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
   tm_polygons(
@@ -313,10 +334,20 @@ bk_intra_nta_od_dist_19 <- tm_shape(bk_intra_nta_od_19) +
   tm_layout(
     title = "2019",
     legend.outside = TRUE
-  ) +
-  bk_subway_lines_map
+  )
+bk_intra_nta_od_dist_02_sub <- bk_intra_nta_od_dist_02 + bk_subway_lines_map
+bk_intra_nta_od_dist_02_road <- bk_intra_nta_od_dist_02 + bk_road_lines_map
+bk_intra_nta_od_dist_19_sub <- bk_intra_nta_od_dist_19 + bk_subway_lines_map
+bk_intra_nta_od_dist_19_road <- bk_intra_nta_od_dist_19 + bk_road_lines_map
+tmap_arrange(
+  bk_intra_nta_od_dist_02_sub,
+  bk_intra_nta_od_dist_19_sub,
+  bk_intra_nta_od_dist_02_road,
+  bk_intra_nta_od_dist_19_road,
+  ncol = 2,
+  nrow = 2
+)
 
-tmap_arrange(bk_intra_nta_od_dist_02, bk_intra_nta_od_dist_19)
 ```
 
 ## Most popular desire lines for folks to commute from one Brooklyn NTA to another
@@ -327,7 +358,7 @@ bk_mono_subway_lines_map <- tm_shape(bk_subway_lines) +
     lwd = 0.25,
   )
 
-bk_desire_lines_dist_02 <- tm_shape(bk_nta_borders) +
+bk_desire_lines_dist_02_sub <- tm_shape(bk_nta_borders) +
   tm_polygons(
     col = "#e4e4e4",
   ) +
@@ -342,7 +373,7 @@ bk_desire_lines_dist_02 <- tm_shape(bk_nta_borders) +
     legend.text.size = 0.55,
   )
 
-bk_desire_lines_dist_19 <- tm_shape(bk_nta_borders) +
+bk_desire_lines_dist_19_sub <- tm_shape(bk_nta_borders) +
   tm_polygons(
     col = "#e4e4e4",
   ) +
@@ -358,5 +389,43 @@ bk_desire_lines_dist_19 <- tm_shape(bk_nta_borders) +
     legend.text.size = 0.55,
   )
 
-tmap_arrange(bk_desire_lines_dist_02, bk_desire_lines_dist_19)
+bk_desire_lines_dist_02_road <- tm_shape(bk_nta_borders) +
+  tm_polygons(
+    col = "#e4e4e4",
+  ) +
+  bk_road_lines_map +
+  tm_shape(bk_desire_lines_02) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+
+bk_desire_lines_dist_19_road <- tm_shape(bk_nta_borders) +
+  tm_polygons(
+    col = "#e4e4e4",
+  ) +
+  bk_road_lines_map +
+  tm_shape(bk_desire_lines_19) +
+    tm_lines(
+      col = "#212121",
+      lwd = "S000",
+      alpha = 0.9
+      ) +
+  tm_layout(
+    legend.outside = TRUE,
+    legend.text.size = 0.55,
+  )
+
+tmap_arrange(
+  bk_desire_lines_dist_02_sub,
+  bk_desire_lines_dist_19_sub,
+  bk_desire_lines_dist_02_road,
+  bk_desire_lines_dist_19_road,
+  ncol = 2,
+  nrow = 2
+  )
 ```

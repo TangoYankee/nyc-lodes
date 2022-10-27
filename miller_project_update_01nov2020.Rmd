@@ -1,0 +1,19 @@
+# Outline
+- Changes to the topic
+  - Shift from trying to predict changes in dynamics to instead focusing on how much of an impact each travel mode makes
+- Changes to the timeline
+  - Need to create a timeline
+  - retroactively mark when progress has been made. Look forward to what progress still needs to be done.
+- Review of the original timeline: 
+  - more detailed information on what has changed for the project
+- A more detailed version of the methods to be applied.
+
+## Questions
+- Edge effects?
+- corrections for changes in census tracts
+### Updated approach
+- Network auto-correlation of OD desire lines for 2019 and 2002
+- Network auto-correlation of MTA system
+- Network auto-correlation of Highway system
+- Regression to compare the MTA and Highway systems, to see which has the greatest effect
+- Is there are way to measure the shift in the networks?
