@@ -162,5 +162,29 @@ tmap::tm_shape(bois_nta_dest) +
 Define the desire lines for work trips throughout the boroughs of interest
 ```{r, message=TRUE}
 # Points on surface
-boi_nta_pos <- 
+bois_nta_pos <- bois_nta_borders %>%
+  dplyr::mutate(geometry = sf::st_point_on_surface(geometry))
+
+bois_nta_od_lines <- bois_nta_ods %>% 
+  dplyr::left_join(bois_nta_pos, c("h_nta_code" = "NTACode")) %>%
+  dplyr::rename(h_geometry = geometry) %>%
+  dplyr::left_join(bois_nta_pos, c("w_nta_code" = "NTACode")) %>%
+  dplyr::rename(w_geometry = geometry) %>%
+  dplyr::mutate(geometry = sf::st_union(h_geometry, w_geometry))%>%
+  dplyr::mutate(geometry = sf::st_cast(geometry, "LINESTRING")) %>%
+  dplyr::select("od", "S000", "geometry") %>%
+  sf::st_as_sf()
+
+tmap::tm_shape(bois_nta_borders) +
+  tmap::tm_polygons(
+    col = "BoroName",
+    title = "Borough",
+  ) + tmap::tm_shape(bois_nta_od_lines) +
+  tmap::tm_lines(
+    col = "#212121",
+    lwd = "S000",
+    title.lwd = "Trips",
+  ) + tmap::tm_layout(
+    legend.outside = TRUE
+  )
 ```
