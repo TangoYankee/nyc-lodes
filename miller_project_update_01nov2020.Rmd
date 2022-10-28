@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 ## Necessary libraries
 ```{r message = FALSE}
 library(tidyverse)
@@ -81,4 +86,5 @@ avg_nta_area <- sum(bois_nta_borders$Shape__Area) / length(bois_nta_borders$Shap
 avg_nta_radius <- sqrt(avg_nta_area/pi)
 print(avg_nta_radius)
 ```
+## Demonstrate the disparity between Manhattan and the other boroughs of interest 
 
