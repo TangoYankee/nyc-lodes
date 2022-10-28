@@ -101,6 +101,7 @@ bois_county_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_n
 Reduce NYS origin destination data to only ntas of interest
 ```{r, message = FALSE}
 bois_county_codes = c("061", "005", "047", "081") # Manhattan, Bronx, Brooklyn, Queens
+bois_park_ntas <- c("BX10", "BX99", "BK99", "MN99", "QN99")
 bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
   # Select only tracts within the boroughs of interest
   dplyr::filter(
@@ -108,22 +109,24 @@ bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
       stringr::str_sub(as.character(h_geocode), 3, 5) %in% bois_county_codes
     ) %>%
   # Create fields specifically for home counties and tracts
-  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
-  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  dplyr::mutate(w_county_tract = stringr::str_sub(as.character(w_geocode), 3, 11)) %>%
+  dplyr::mutate(h_county_tract = stringr::str_sub(as.character(h_geocode), 3, 11)) %>%
   # Narrow table down to tracts and all jobs
-  select(h_county_tract, w_county_tract, S000) %>%
+  dplyr::select(h_county_tract, w_county_tract, S000) %>%
   # Relate tracts with ntas
-  left_join(bois_county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
-  rename(h_nta_code = nta_code) %>%
-  left_join(bois_county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
-  rename(w_nta_code = nta_code) %>%
+  dplyr::left_join(bois_county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  dplyr::rename(h_nta_code = nta_code) %>%
+  dplyr::left_join(bois_county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  dplyr::rename(w_nta_code = nta_code) %>%
   # Remove trips within the same nta, only inter-nta trips are of interest
-  filter(w_nta_code != h_nta_code) %>%
+  dplyr::filter(w_nta_code != h_nta_code) %>%
+  # Remove trips involving park NTAs, they are not true neighborhoods 
+  dplyr::filter(!(w_nta_code %in% bois_park_ntas) & !(h_nta_code %in% bois_park_ntas)) %>%
   # Label trips based on home and work ntas
-  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  dplyr::mutate(od = str_c(h_nta_code, w_nta_code)) %>%
   # Count the number of trips made between these ntas and in this direction 
-  group_by(od) %>%
-  summarise(
+  dplyr::group_by(od) %>%
+  dplyr::summarise(
     h_nta_code,
     w_nta_code,
     S000 = sum(S000),
@@ -131,4 +134,33 @@ bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
   # Remove duplicate entries
   unique()
 ```
+Define the most popular neighborhoods to work for those who live in the 
+boroughs of interest
+```{r, message = FALSE}
+bois_nta_dest <- bois_nta_ods %>%
+  dplyr::group_by(w_nta_code) %>%
+  dplyr::summarise(
+    w_nta_code,
+    S000 = sum(S000)
+  ) %>%
+  unique() %>%
+  left_join(bois_nta_borders, c("w_nta_code" = "NTACode")) %>%
+  st_as_sf()
 
+tmap::tm_shape(bois_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    style = "jenks",
+    title = "Trips to work in NTA",
+    legend.outside.width = 0.6
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE,
+  )
+```
+
+Define the desire lines for work trips throughout the boroughs of interest
+```{r, message=TRUE}
+# Points on surface
+boi_nta_pos <- 
+```
