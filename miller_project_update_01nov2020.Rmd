@@ -9,6 +9,7 @@ library(tidyverse)
 library(geojsonsf)
 library(sf)
 library(tmap)
+options(scipen = 999)
 ```
 # Outline
 - Changes to the topic
@@ -56,8 +57,8 @@ bois_names <- c("Manhattan", "Bronx", "Brooklyn", "Queens")
 bois_census_tract_borders <- geojson_sf('./data/nyc_2010_census_tract_borders.geojson') %>%
   dplyr::filter(BoroName %in% bois_names)
   
-tm_shape(bois_census_tract_borders) + 
-  tm_polygons(
+tmap::tm_shape(bois_census_tract_borders) + 
+  tmap::tm_polygons(
     col = "BoroName",
     title = "Borough"
   )
@@ -75,8 +76,8 @@ print(avg_tract_radius)
 bois_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson') %>%
   dplyr::filter(BoroName %in% bois_names)
 
-tm_shape(bois_nta_borders) +
-  tm_polygons(
+tmap::tm_shape(bois_nta_borders) +
+  tmap::tm_polygons(
     col = "BoroName",
     title = "Borough"
   )
@@ -87,4 +88,47 @@ avg_nta_radius <- sqrt(avg_nta_area/pi)
 print(avg_nta_radius)
 ```
 ## Demonstrate the disparity between Manhattan and the other boroughs of interest 
+
+### Create map between census tracts and ntas
+Specify county because census tracts may not be unique across counties
+```{r, message = FALSE}
+bois_county_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
+  filter(borough_name %in% bois_names) %>%
+  mutate(county_tract = str_c(`county_code`, `census_tract`)) %>%
+  select("county_tract", "nta_code")
+```
+
+Reduce NYS origin destination data to only ntas of interest
+```{r, message = FALSE}
+bois_county_codes = c("061", "005", "047", "081") # Manhattan, Bronx, Brooklyn, Queens
+bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
+  # Select only tracts within the boroughs of interest
+  dplyr::filter(
+    stringr::str_sub(as.character(w_geocode), 3, 5) %in% bois_county_codes &
+      stringr::str_sub(as.character(h_geocode), 3, 5) %in% bois_county_codes
+    ) %>%
+  # Create fields specifically for home counties and tracts
+  mutate(w_county_tract = str_sub(as.character(w_geocode), 3, 11)) %>%
+  mutate(h_county_tract = str_sub(as.character(h_geocode), 3, 11)) %>%
+  # Narrow table down to tracts and all jobs
+  select(h_county_tract, w_county_tract, S000) %>%
+  # Relate tracts with ntas
+  left_join(bois_county_tract_nta_equiv, c("h_county_tract" = "county_tract")) %>%
+  rename(h_nta_code = nta_code) %>%
+  left_join(bois_county_tract_nta_equiv, c("w_county_tract" = "county_tract")) %>%
+  rename(w_nta_code = nta_code) %>%
+  # Remove trips within the same nta, only inter-nta trips are of interest
+  filter(w_nta_code != h_nta_code) %>%
+  # Label trips based on home and work ntas
+  mutate(od = str_c(h_nta_code, w_nta_code)) %>%
+  # Count the number of trips made between these ntas and in this direction 
+  group_by(od) %>%
+  summarise(
+    h_nta_code,
+    w_nta_code,
+    S000 = sum(S000),
+    ) %>%
+  # Remove duplicate entries
+  unique()
+```
 
