@@ -35,6 +35,7 @@ Started with interest in Triboro line ridership
 
 ## Data sources
 - Origin and Destination data for NYS in 2019 at the block level
+- NYC Census tract borders
 - Borders of NYC boroughs
 - Equivalency of Neighborhood Tabulation Areas
 - Subway routes
@@ -45,4 +46,19 @@ Started with interest in Triboro line ridership
   - Will need to be supplemented with a routing service
 
 ## Visualize the census tracts and ntas, providing context for their size
+```{r, message = FALSE}
+bois_names <- c("Manhattan", "Bronx", "Brooklyn", "Queens")
+bois_census_tract_borders <- geojson_sf('./data/nyc_2010_census_tract_borders.geojson') %>%
+  dplyr::filter(BoroName %in% bois_names)
+  
+tm_shape(bois_census_tract_borders) + 
+  tm_polygons(
+    col = "BoroName"
+  )
+```
 
+### Estimate the average distance from the center to the edge of tract
+```{r, message = FALSE}
+avg_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census_tract_borders$Shape__Area)
+avg_radius <- sqrt(avg_area/pi)
+```
