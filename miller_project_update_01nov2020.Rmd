@@ -53,12 +53,32 @@ bois_census_tract_borders <- geojson_sf('./data/nyc_2010_census_tract_borders.ge
   
 tm_shape(bois_census_tract_borders) + 
   tm_polygons(
-    col = "BoroName"
+    col = "BoroName",
+    title = "Borough"
   )
 ```
 
 ### Estimate the average distance from the center to the edge of tract
 ```{r, message = FALSE}
-avg_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census_tract_borders$Shape__Area)
-avg_radius <- sqrt(avg_area/pi)
+avg_tract_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census_tract_borders$Shape__Area)
+avg_tract_radius <- sqrt(avg_tract_area/pi)
+print(avg_tract_radius)
 ```
+
+## Visualize the ntas
+```{r, message = FALSE}
+bois_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson') %>%
+  dplyr::filter(BoroName %in% bois_names)
+
+tm_shape(bois_nta_borders) +
+  tm_polygons(
+    col = "BoroName",
+    title = "Borough"
+  )
+```
+```{r, message = FALSE}
+avg_nta_area <- sum(bois_nta_borders$Shape__Area) / length(bois_nta_borders$Shape__Area)
+avg_nta_radius <- sqrt(avg_nta_area/pi)
+print(avg_nta_radius)
+```
+
