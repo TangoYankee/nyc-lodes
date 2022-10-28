@@ -1,3 +1,10 @@
+## Necessary libraries
+```{r message = FALSE}
+library(tidyverse)
+library(geojsonsf)
+library(sf)
+library(tmap)
+```
 # Outline
 - Changes to the topic
   - Shift from trying to predict changes in dynamics to instead focusing on how much of an impact each travel mode makes
@@ -9,11 +16,33 @@
 - A more detailed version of the methods to be applied.
 
 ## Questions
-- Edge effects?
 - corrections for changes in census tracts
 ### Updated approach
-- Network auto-correlation of OD desire lines for 2019 and 2002
+- Network auto-correlation of OD desire lines for 2019
 - Network auto-correlation of MTA system
 - Network auto-correlation of Highway system
+- Network correlation of contiguous NTAs
 - Regression to compare the MTA and Highway systems, to see which has the greatest effect
 - Is there are way to measure the shift in the networks?
+
+Started with interest in Triboro line ridership
+- Interest in the four boroughs that are severed by the subway system
+- Manhattan overwhelms the travel patterns throughout the boroughs of interest
+- Insufficient data to track the total ridership and the means 
+  - Travel surveys did not offer the level of detail or confidence
+- Shifted to looking specifically at work commuting patterns within a single borough
+- Focused on what correlation each transporation system has with the OD patterns
+
+## Data sources
+- Origin and Destination data for NYS in 2019 at the block level
+- Borders of NYC boroughs
+- Equivalency of Neighborhood Tabulation Areas
+- Subway routes
+  - Good for data exploration
+  - Will need to be suplemented with a routing service
+- Arterials and Major Roads
+  - Good for data exploration
+  - Will need to be supplemented with a routing service
+
+## Visualize the census tracts and ntas, providing context for their size
+
