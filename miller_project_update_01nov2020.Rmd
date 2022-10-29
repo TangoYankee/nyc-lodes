@@ -11,8 +11,8 @@ Professor Jochen Albrecht
 November 1, 2022  
 
 ## Outline  
-This report documents the progress made on during research into possible effects
-of the proposed Triboro line on the transportation dynamics of Manhattan, The Bronx,
+This report documents the progress made on the research into possible effects
+of the proposed Triboro line on the transportation dynamics of Manhattan, the Bronx,
 Brooklyn, and Queens- collective referred to as the boroughs of interest.  
 
 The report will:  
@@ -29,7 +29,7 @@ submitted on Sept 13. After being advised that I would need to provide an invent
 of data needs and a conceptual model, I resubmitted an updated project proposal on Sep 27.
 This update included the conceptual model shown in Figure 1 and the data needs 
 inventory shown in Table 1. After outlining a general research approach, I found
-and examine relevant data with exploratory spatial data analysis.
+and examined relevant data with exploratory spatial data analysis.
 
 ![Conceptual Model of travel](./images/triboro-conceptual-model-original.png)  
 *Figure 1: original conceptual model of transportation dynamics*  
@@ -61,30 +61,25 @@ options(scipen = 999)
 **Required data (imported throughout the exploration process)**  
 *- Origin and Destination data for NYS in 2019 at the block level*  
 *- NYC census tract borders*  
-*- Borders of NYC boroughs*  
+*- NYC NTA borders*   
+*- NYC boroughs borders*  
 *- Equivalency of neighborhood tabulation areas to census tracts*  
 
 ### Select the resolution of the study area.
 LODES data are provided at the block level. However, the research question relates
 to trips that require the highway or subway system. Census blocks for NYC are 
 generally small enough that people can walk between them. Because the research
-question is not interested in these trips, we can consolidate these trips into
-census tracts. 
+question is not interested in these trips, we can consolidate these census blocks
+into census tracts. 
 
+#### Census tracts
 Figure 2 indicates that it is also feasible to walk between census tracts. 
-We can general estimate the distance from the center of each tract to its edge.
+We can generally estimate the distance from the center of each tract to its edge.
 This will help quantify census tract walk-ability. Let us consider a distance 
 below 3000 meters to be walk-able. Though census tracts are irregularly shaped,
-let us model them as circles to achieve a generally estimate. With this model,
+let us model them as circles to achieve a general estimate. With this model,
 we find the average census radius is around 1000 meters. This is well below our
 walk-ability threshold.  
-
-NYC provides a higher level of aggregation than the census tract. The Neighborhood
-Tabulation Area (NTA) groups census tracts in a way that generally aligns with 
-neighborhood boundaries within the city. They are mapped in Figure 3. They have an
-estimated average radius of 3500 meters. NTAs generally represent the minimum 
-distance for trips that would benefit from the subway or highway system. They 
-will be used for the remaining analyses.
 
 **Map borough of interest census tracts**  
 ```{r, message = FALSE}
@@ -106,6 +101,14 @@ avg_tract_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census
 avg_tract_radius <- sqrt(avg_tract_area/pi)
 sprintf("Estimate of average distance from the center to the edge of a tract: %s m", avg_tract_radius)
 ```
+#### NYC NTAs
+NYC provides a higher level of aggregation than the census tract. The Neighborhood
+Tabulation Area (NTA) groups census tracts in a way that generally aligns with 
+neighborhood boundaries within the city. They are mapped in Figure 3. They have an
+estimated average radius of 3500 meters. NTAs generally represent the minimum 
+distance for trips that would benefit from the subway or highway system. They 
+will be used for the remaining analyses.
+
 **Map NTAs**  
 ```{r, message = FALSE}
 # Map borough of interest ntas
@@ -267,12 +270,12 @@ tmap::tm_shape(bois_nta_borders) +
 ```
 *Figure 5: Desire lines for inter-NTA trips*   
 
-## Examine trips made within the same borough
+### Examine trips made within the same borough
 To help select the borough to focus on, I examined trips that occur within each
 borough. From Figure 6 and 7, Manhattan is still dominated by commutes to 
 Midtown. However, the Bronx, Brooklyn, and Queens trips are more evenly distributed.
 Looking at the total number of trips, Brooklyn has the most outside of Manhattan.
-Manhattan has 508,873, the Bronx has 114,719, Brooklyn has 370256, and Queens has 265386.
+Manhattan has 508,873, the Bronx has 114,719, Brooklyn has 370,256, and Queens has 265,386.
 As Brooklyn has the second most trips and these trips are distributed throughout
 the borough, it will be used as the sole borough of interest for the rest of
 the project. The decision to use Brooklyn was submitted on Oct 17. Because the
@@ -412,11 +415,11 @@ sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
 sprintf("Queens: % s", sum(qn_nta_ods$S000))
 ```
 
-## Reexamination of researh question
+## Reexamination of the researh question
 After the exploratory data analysis, I had a better understanding of commuting
 patterns throughout NYC. This helped me redefine the approach to the research
-question. Professor Albrecht also directed me to examine Network Auto-correlation
-and determine how it could fit into the examination.
+question. Professor Albrecht also advised me to examine network auto-correlation
+as it would help with the analyses.
 
 For my research question, I am no longer attempting to predict an exact number of
 trips that are generated by the Triboro line or converted from the highway system.
@@ -426,7 +429,7 @@ effect of commutes on neighboring commutes. In other words, do people work in
 a location simply because everyone else works in that location?
 
 To examine the question of commutes affecting neighboring commutes, I would like to 
-perform network autocorrelation. In this model, each NTA is a node and its edges
+perform network auto-correlation. In this model, each NTA is a node and its edges
 are the presence of trips between two NTAs, or their desire lines.
 Figures 8 through 11 demonstrate the creation of a network auto-correlation
 neighborhood matrix. First, start with the NTAs as they exist in geographical space.
@@ -464,11 +467,12 @@ auto-correlation between the desire lines and several definitions for neighbor
 relationships. These relationships include subway connections, street connections,
 and queen contiguities. However, I believe I made a conceptual error with this 
 proposal. I will illustrate my point with the subway definition. However, the
-point applies to all neighbor definitions.
+point also applies to the other two neighbor definitions.
 
-Figure 13 shows subway connections for the example NTAs. Figure 14 shows their
-neighborhood matrix for the NTAs. In this example, two NTAs are neighbors if
-one can reach the other using one subway line with no transfers. For this matrix,
+Figure 13 shows subway connections for the example NTAs. Figure 14 shows the
+neighborhood matrix for the NTAs connected by the subway. In this example, 
+two NTAs are neighbors if one nta can reach the other using a single subway line
+with no transfers. For this matrix,
 there are not enough dimensions to represent the trips between the NTAs. Each NTA
 only has enough dimensions to hold information about itself. 
 
@@ -478,17 +482,17 @@ subways are meant as direct connections between two NTAs. They don't represent a
 meaningful connection between neighboring desire line arcs.
 
 Two tests will be required to fully represent the relationship between subways,
-ntas, and desire lines. First, the value of each NTAs will be the total
+ntas, and desire lines. First, the value of each NTA will be the total
 number of trips which end in that NTA. This is illustrated in Figure 16. These
 values will be paired with the NTA neighborhood matrix illustrated in Figure 14.
 This auto-correlation will identify whether there are low job NTAs that are not 
 Subway Neighbors with high job NTAs. However, it will not identify whether there 
 is a relationship between the number of trips made between two NTAs and the 
-presence of a Subway line. That will require a second test. For the second test,
-I would run a regression with the presence of a subway connections as the 
+presence of a subway line. That will require a second test. For the second test,
+I would run a regression with the presence of a subway connection as the 
 independent variable and the number of trips along an arc as the dependent variable.
 
-Road and queen contiguities would be conducive to these tests as well. I am still
+Road and queen contiguities would be conducive to these tests as well. Though, I am still
 researching the best definition of neighbor relationship based on road connections.
 In addition to the global auto-correlation tests, I would perform corresponding
 local auto-correlation tests.
@@ -524,11 +528,11 @@ These questions are much more broad than the original proposal. This associated
 data needs inventory is also simpler.
 The total inventory is:
 - Origin and Destination data for NYS in 2019 at the block level  
-- NYC census tract borders  
-- Borders of NYC boroughs  
-- Equivalency of neighborhood tabulation areas to census tracts  
+- NYC NTA borders  
+- NYC boroughs borders  
+- Equivalency of NTAs to census tracts  
 - Subway-based routes between NTAs
-- Major street based routes between NTAs
+- Major street-based routes between NTAs
 
 All of the data have already been obtained, except the subway and 
 major street routing data. These data can be obtained through open source or
@@ -539,7 +543,7 @@ With Dec 13 as the presentation deadline, the timeline of milestones follows:
   - Queen contiguity auto-correlation is the "traditional" approach. It is also
   does not require the routing data. Performing it first should help inform the 
   other analyses.  
-- Perform subway contiguity local and glocal auto-correlation, and regression (Nov 15)  
+- Perform subway contiguity local and global auto-correlation, and regression (Nov 15)  
   - This requires requests to a routing service to obtain the data. Making those
   api requests early will help identify potential problems while there is time 
   to adapt.  
@@ -547,6 +551,6 @@ With Dec 13 as the presentation deadline, the timeline of milestones follows:
 - Perform network auto-correlation (Nov 29)
 - Write report and presentation (Dec 6)  
   
-The report will conclude with an examination of the findings and an identification
-of "missing links" in the subway system. This might provide an opportunity to highlight
+The report will conclude with an examination of the findings and speculation on
+"missing links" in the subway system. This might provide an opportunity to highlight
 the Brooklyn segment of the Triboro line.
