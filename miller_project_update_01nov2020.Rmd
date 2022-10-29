@@ -21,8 +21,8 @@ options(scipen = 999)
   - more detailed information on what has changed for the project
 - A more detailed version of the methods to be applied.
 
-## Questions
-- corrections for changes in census tracts
+## Conceptual Model
+![Conceptual Model of travel](./images/triboro-conceptual_model-chart.jpg)
 ### Updated approach
 - Network auto-correlation of OD desire lines for 2019
 - Network auto-correlation of MTA system
@@ -177,15 +177,19 @@ Define the desire lines for work trips throughout the boroughs of interest
 bois_nta_pos <- bois_nta_borders %>%
   dplyr::mutate(geometry = sf::st_point_on_surface(geometry))
 
-bois_nta_od_lines <- bois_nta_ods %>% 
-  dplyr::left_join(bois_nta_pos, c("h_nta_code" = "NTACode")) %>%
-  dplyr::rename(h_geometry = geometry) %>%
-  dplyr::left_join(bois_nta_pos, c("w_nta_code" = "NTACode")) %>%
-  dplyr::rename(w_geometry = geometry) %>%
-  dplyr::mutate(geometry = sf::st_union(h_geometry, w_geometry))%>%
-  dplyr::mutate(geometry = sf::st_cast(geometry, "LINESTRING")) %>%
-  dplyr::select("od", "S000", "geometry") %>%
-  sf::st_as_sf()
+get_nta_od_lines <- function(nta_ods_of_interest) {
+ nta_ods_of_interest %>%
+    dplyr::left_join(bois_nta_pos, c("h_nta_code" = "NTACode")) %>%
+    dplyr::rename(h_geometry = geometry) %>%
+    dplyr::left_join(bois_nta_pos, c("w_nta_code" = "NTACode")) %>%
+    dplyr::rename(w_geometry = geometry) %>%
+    dplyr::mutate(geometry = sf::st_union(h_geometry, w_geometry))%>%
+    dplyr::mutate(geometry = sf::st_cast(geometry, "LINESTRING")) %>%
+    dplyr::select("od", "S000", "geometry") %>%
+    sf::st_as_sf() 
+}
+
+bois_nta_od_lines <- get_nta_od_lines(bois_nta_ods)
 
 tmap::tm_shape(bois_nta_borders) +
   tmap::tm_polygons(
@@ -275,4 +279,52 @@ sprintf("Bronx: % s", sum(bx_nta_ods$S000))
 sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
 sprintf("Queens: % s", sum(qn_nta_ods$S000))
 ```
+## Desire lines for intra borough trips
+```{r, message=FALSE}
+mn_nta_od_lines <- get_nta_od_lines(mn_nta_ods)
+bx_nta_od_lines <- get_nta_od_lines(bx_nta_ods)
+bk_nta_od_lines <- get_nta_od_lines(bk_nta_ods)
+qn_nta_od_lines <- get_nta_od_lines(qn_nta_ods)
 
+create_od_lines_map <- function(borders, lines, borough) {
+  return(
+    tmap::tm_shape(borders) +
+ tmap::tm_polygons(
+    col = "#ebebeb",
+    title = borough
+  ) + tmap::tm_shape(lines) +
+  tmap::tm_lines(
+    col = "#212121",
+    lwd = "S000",
+    title.lwd = "Trips"
+  ) +
+  tmap::tm_layout(
+    legend.outside = TRUE
+  )
+  )
+}
+
+mn_nta_od_lines_map <- create_od_lines_map(mn_nta_borders,
+                                           dplyr::filter(mn_nta_od_lines, S000 > 6000),
+                                           "Manhattan"
+                                           )
+bx_nta_od_lines_map <- create_od_lines_map(bx_nta_borders,
+                                           dplyr::filter(bx_nta_od_lines, S000 > 300),
+                                           "Bronx"
+                                           )
+bk_nta_od_lines_map <- create_od_lines_map(bk_nta_borders,
+                                           dplyr::filter(bk_nta_od_lines, S000 > 500),
+                                           "Brooklyn"
+                                           )
+qn_nta_od_lines_map <- create_od_lines_map(qn_nta_borders,
+                                           dplyr::filter(qn_nta_od_lines, S000 > 500),
+                                           "Queens"
+                                           )
+tmap::tmap_arrange(
+  mn_nta_od_lines_map,
+  bx_nta_od_lines_map,
+  bk_nta_od_lines_map,
+  qn_nta_od_lines_map,
+  nrow = 2,
+  ncol = 2)
+```
