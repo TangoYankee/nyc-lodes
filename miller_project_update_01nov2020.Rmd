@@ -137,6 +137,18 @@ bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
 Define the most popular neighborhoods to work for those who live in the 
 boroughs of interest
 ```{r, message = FALSE}
+get_nta_dest <- function(ods_of_interest) {
+  ods_of_interest %>%
+    dplyr::group_by(w_nta_code) %>%
+    dplyr::summarise(
+      w_nta_code,
+      S000 = sum(S000)
+    ) %>%
+    unique() %>%
+    left_join(bois_nta_borders, c("w_nta_code" = "NTACode")) %>%
+    st_as_sf() 
+}
+
 bois_nta_dest <- bois_nta_ods %>%
   dplyr::group_by(w_nta_code) %>%
   dplyr::summarise(
@@ -179,7 +191,7 @@ tmap::tm_shape(bois_nta_borders) +
   tmap::tm_polygons(
     col = "BoroName",
     title = "Borough",
-  ) + tmap::tm_shape(bois_nta_od_lines) +
+  ) + tmap::tm_shape(dplyr::filter(bois_nta_od_lines, S000 > 5000)) +
   tmap::tm_lines(
     col = "#212121",
     lwd = "S000",
@@ -188,3 +200,79 @@ tmap::tm_shape(bois_nta_borders) +
     legend.outside = TRUE
   )
 ```
+## Define the most origin destination profiles for trips within the same borough
+```{r, message=FALSE}
+## NTA borders for each borough
+mn_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Manhattan")
+bx_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Bronx")
+bk_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Brooklyn")
+qn_nta_borders <- bois_nta_borders %>%
+  dplyr::filter(BoroName == "Queens")
+
+## Intra Borough trips 
+intra_bois_nta_ods <- function(boro_abrv) {
+  bois_nta_ods %>%
+    dplyr::filter(
+      stringr::str_sub(h_nta_code, 1,2) == boro_abrv &
+      stringr::str_sub(w_nta_code, 1, 2) == boro_abrv
+    )
+}
+mn_nta_ods <- intra_bois_nta_ods("MN")
+bx_nta_ods <- intra_bois_nta_ods("BX")
+bk_nta_ods <- intra_bois_nta_ods("BK")
+qn_nta_ods <- intra_bois_nta_ods("QN")
+
+
+## Most popular destinations for trips within a Borough
+
+mn_nta_dest <- get_nta_dest(mn_nta_ods)
+bx_nta_dest <- get_nta_dest(bx_nta_ods)
+bk_nta_dest <- get_nta_dest(bk_nta_ods)
+qn_nta_dest <- get_nta_dest(qn_nta_ods)
+  
+mn_dest_map <- tmap::tm_shape(mn_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Manhattan"
+  )
+bx_dest_map <- tmap::tm_shape(bx_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Bronx"
+  )
+bk_dest_map <- tmap::tm_shape(bk_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Brooklyn"
+  )
+qn_dest_map <- tmap::tm_shape(qn_nta_dest) +
+  tmap::tm_polygons(
+    col = "S000",
+    title = "Trip count"
+  ) + tmap::tm_layout(
+    legend.outside = TRUE,
+    title = "Queens"
+  )
+tmap::tmap_arrange(mn_dest_map, bx_dest_map, bk_dest_map, qn_dest_map, nrow = 2, ncol = 2)
+```
+Total trips in each borough
+```{r, message = FALSE}
+print("Intra borough trips")
+sprintf("Manhattan: % s", sum(mn_nta_ods$S000))
+sprintf("Bronx: % s", sum(bx_nta_ods$S000))
+sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
+sprintf("Queens: % s", sum(qn_nta_ods$S000))
+```
+
