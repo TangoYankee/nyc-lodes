@@ -22,7 +22,7 @@ options(scipen = 999)
 - A more detailed version of the methods to be applied.
 
 ## Conceptual Model
-![Conceptual Model of travel](./images/triboro-conceptual_model-chart.jpg)
+![Conceptual Model of travel](./images/triboro-conceptual-model-original.png)
 ### Updated approach
 - Network auto-correlation of OD desire lines for 2019
 - Network auto-correlation of MTA system
