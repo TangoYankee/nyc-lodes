@@ -4,7 +4,7 @@ output:
   html_document: default
 ---
 
-# Outline
+# Outline  
 - Changes to the topic
   - Shift from trying to predict changes in dynamics to instead focusing on how much of an impact each travel mode makes
 - Changes to the timeline
@@ -21,15 +21,15 @@ GTECH 70500: Spatial Data Analysis
 Professor Jochen Albrecht
 November 1, 2022
 
-## Outline
+## Outline  
 This report documents the progress made on during research into possible effects
 of the proposed Triboro line on the transportation dynamics of Manhattan, The Bronx,
-Brooklyn, and Queens. The report will:
-- review the original research proposal
-- share results of the exploratory spatial data analysis
-- explore the availability of required data
-- reexamine the research question
-- update the research goals and strategies
+Brooklyn, and Queens. The report will:  
+- review the original research proposal  
+- share results of the exploratory spatial data analysis  
+- explore the availability of required data  
+- reexamine the research question  
+- update the research goals and strategies  
 
 ## Original Research Proposal
 The original research question examined the number of total trips that would be
@@ -42,18 +42,19 @@ shown in Table 1. After outlining a general research approach, I finding and
 examining relevant data.
 
 ![Conceptual Model of travel](./images/triboro-conceptual-model-original.png)  
-Figure 1: original conceptual model of transportation dynamics  
-![Original data needs inventory](images/data-needs-inventory-original.png)  
-Table 2: original identified data needs inventory  
+*Figure 1: original conceptual model of transportation dynamics*  
 
-## Exploratory Spatial Data Analysis
+![Original data needs inventory](images/data-needs-inventory-original.png)  
+*Table 2: original identified data needs inventory*   
+
+## Exploratory Spatial Data Analysis  
 After being provided the Longitudinal Employer-Household Dynamics (LEHD) 
 Origin-Destination Employment Statistics (LODES) data and receiving the
 spatial flows lecture, I began exploring the commute data for the 
 boroughs of interest. The exploratory process helped direct the research question,
 narrow the study area, and focus the statistical tests.
 
-Required libraries imported directly below
+*Required libraries imported directly below*
 ```{r message = FALSE}
 # Data cleaning and organizing
 library(tidyverse)
@@ -67,7 +68,7 @@ library(tmap)
 options(scipen = 999)
 ```
 
-Required data imported throughout the exploration process
+**Required data imported throughout the exploration process**  
 - Origin and Destination data for NYS in 2019 at the block level
 - NYC census tract borders
 - Borders of NYC boroughs
@@ -95,8 +96,8 @@ estimated average radius of 3500 meters. NTAs generally represent the minimum
 distance for trips that would benefit from the subway or highway system. They 
 will be used for the remaining analyses.
 
+*Map borough of interest census tracts*
 ```{r, message = FALSE}
-# Map borough of interest census tracts
 bois_names <- c("Manhattan", "Bronx", "Brooklyn", "Queens")
 bois_census_tract_borders <- geojson_sf('./data/nyc_2010_census_tract_borders.geojson') %>%
   dplyr::filter(BoroName %in% bois_names)
@@ -107,10 +108,10 @@ tmap::tm_shape(bois_census_tract_borders) +
     title = "Borough"
   )
 ```
-Figure 2: Map of census tracts for the boroughs of interest.  
+**Figure 2: Map of census tracts for the boroughs of interest.**  
 
+*Estimate the average distance from the center to the edge of tract*  
 ```{r, message = FALSE}
-# Estimate the average distance from the center to the edge of tract
 avg_tract_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census_tract_borders$Shape__Area)
 avg_tract_radius <- sqrt(avg_tract_area/pi)
 sprintf("Estimate of average distance from the center to the edge of a tract: %s m", avg_tract_radius)
@@ -127,7 +128,7 @@ tmap::tm_shape(bois_nta_borders) +
     title = "Borough"
   )
 ```
-Figure 3: Map of NTAs for boroughs of interest  
+*Figure 3: Map of NTAs for boroughs of interest*  
 
 ```{r, message = FALSE}
 # Estimate of average distance from center to edge of nta
@@ -142,10 +143,13 @@ have the greatest number of trips. However, I did not anticipate the disparity
 between Midtown Manhattan and the rest of the boroughs of interest. Figure 4
 shows that Midtown Manhattan has tens and even hundreds of thousands more 
 trips than other neighborhoods. Figure 5 shows an overwhelming proportion of trips
-end in Midtown Manhattan. This disparity would like drown out the
-transportation effects for other neighborhoods. 
+end in Midtown Manhattan. This disparity would likely drown out the
+transportation effects for other neighborhoods. As part of a discussion on Oct 14,
+Professor Albrecht recommended I attempt to detect more subtle patterns by narrowing
+the study area to a single borough. As part of this process, I explored the 
+intra-borough travel patterns.
 
-*Pre-process the data to count the number of trips between neighborhoods of interest.*
+*Count the number of trips between neighborhoods of interest.*
 *The trips must start and end in the city. They must also start and end in different*
 *neighborhoods. Finally, we remove park ntas; they do not represent a single*
 *geographic area and they are not expected to have significant work commute activity.*
@@ -192,7 +196,7 @@ bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
   unique()
 ```
 
-Map the distribution of work trips that end in each neighborhoods of interest.
+*Map the distribution of work trips that end in each neighborhoods of interest.*
 ```{r, message = FALSE}
 
 ## utility function
@@ -231,11 +235,11 @@ tmap::tm_shape(bois_nta_dest) +
     legend.outside = TRUE,
   )
 ```
-Figure 4: Distribution of work trips that end in each neighborhood.
-Each trip must start in the boroughs of interest. It must also end in a different
-neighborhood than it started.  
+*Figure 4: Distribution of work trips that end in each neighborhood.*  
+*Each trip must start in the boroughs of interest. It must also end in a different*
+*neighborhood than it started.*  
 
-Define the desire lines for work trips throughout the boroughs of interest
+*Define the desire lines for work trips throughout the boroughs of interest*
 ```{r, message=TRUE}
 # Points on surface
 bois_nta_pos <- bois_nta_borders %>%
@@ -260,6 +264,7 @@ tmap::tm_shape(bois_nta_borders) +
   tmap::tm_polygons(
     col = "BoroName",
     title = "Borough",
+  # Filter the desire lines to reduce their number and help pdf rendering
   ) + tmap::tm_shape(dplyr::filter(bois_nta_od_lines, S000 > 5000)) +
   tmap::tm_lines(
     col = "#212121",
@@ -269,12 +274,19 @@ tmap::tm_shape(bois_nta_borders) +
     legend.outside = TRUE
   )
 ```
-Figure 5: Desire lines for inter-NTA trips  
+*Figure 5: Desire lines for inter-NTA trips*   
 
 ## Examine trips made within the same borough
+To help select the borough to focus on, I examined trips that occur within each
+borough. From Figure 6 and 7, Manhattan is still dominated by commutes to 
+Midtown. However, the Bronx, Brooklyn, and Queens trips are more evenly distributed.
+Looking at the total number of trips, Brooklyn has the most outside of Manhattan.
+Manhattan has 508,873, the Bronx has 114,719, Brooklyn has 370256, and Queens has 265386.
+As Brooklyn has the second most trips and these trips are distributed throughout
+the borough, it will be used as the sole borough of interest for the rest of
+the project. The decision to use Brooklyn was submitted on Oct 17.
 
-
-Define the most origin destination profiles for trips within the same borough
+*Map the distribution of intra-borough trips that end in each NTA*
 ```{r, message=FALSE}
 ## NTA borders for each borough
 mn_nta_borders <- bois_nta_borders %>%
@@ -340,17 +352,10 @@ qn_dest_map <- tmap::tm_shape(qn_nta_dest) +
   )
 tmap::tmap_arrange(mn_dest_map, bx_dest_map, bk_dest_map, qn_dest_map, nrow = 2, ncol = 2)
 ```
+*Figure 6: Intra-borough and Inter-NTA trips for the boroughs of interest *
 
-Total trips in each borough
-```{r, message = FALSE}
-print("Intra borough trips")
-sprintf("Manhattan: % s", sum(mn_nta_ods$S000))
-sprintf("Bronx: % s", sum(bx_nta_ods$S000))
-sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
-sprintf("Queens: % s", sum(qn_nta_ods$S000))
-```
 
-Desire lines for intra borough trips
+*Desire lines for intra borough trips*
 ```{r, message=FALSE}
 mn_nta_od_lines <- get_nta_od_lines(mn_nta_ods)
 bx_nta_od_lines <- get_nta_od_lines(bx_nta_ods)
@@ -375,6 +380,7 @@ create_od_lines_map <- function(borders, lines, borough) {
   )
 }
 
+# Filter the desire lines to reduce their number and help pdf rendering
 mn_nta_od_lines_map <- create_od_lines_map(mn_nta_borders,
                                            dplyr::filter(mn_nta_od_lines, S000 > 6000),
                                            "Manhattan"
@@ -399,7 +405,17 @@ tmap::tmap_arrange(
   nrow = 2,
   ncol = 2)
 ```
+*Figure 7: Desire lines for intra-borough work trips*
 
+*Total intra-borough trips for each borough of interest*
+```{r, message = FALSE}
+print("Intra borough trips")
+sprintf("Manhattan: % s", sum(mn_nta_ods$S000))
+sprintf("Bronx: % s", sum(bx_nta_ods$S000))
+sprintf("Brooklyn: % s", sum(bk_nta_ods$S000))
+sprintf("Queens: % s", sum(qn_nta_ods$S000))
+```
+### Availability and practicality of required data  
 
 ### Updated approach
 - Network auto-correlation of OD desire lines for 2019
