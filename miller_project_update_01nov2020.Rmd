@@ -54,7 +54,7 @@ spatial flows lecture, I began exploring the commute data for the
 boroughs of interest. The exploratory process helped direct the research question,
 narrow the study area, and focus the statistical tests.
 
-*Required libraries imported directly below*
+**Required libraries**  
 ```{r message = FALSE}
 # Data cleaning and organizing
 library(tidyverse)
@@ -69,10 +69,10 @@ options(scipen = 999)
 ```
 
 **Required data imported throughout the exploration process**  
-- Origin and Destination data for NYS in 2019 at the block level
-- NYC census tract borders
-- Borders of NYC boroughs
-- Equivalency of neighborhood tabulation areas to census tracts
+*- Origin and Destination data for NYS in 2019 at the block level*  
+*- NYC census tract borders*  
+*- Borders of NYC boroughs*  
+*- Equivalency of neighborhood tabulation areas to census tracts*  
 
 ### Select the resolution of the study area.
 LODES data are provided at the block level. However, the research question relates
@@ -96,7 +96,7 @@ estimated average radius of 3500 meters. NTAs generally represent the minimum
 distance for trips that would benefit from the subway or highway system. They 
 will be used for the remaining analyses.
 
-*Map borough of interest census tracts*
+**Map borough of interest census tracts**  
 ```{r, message = FALSE}
 bois_names <- c("Manhattan", "Bronx", "Brooklyn", "Queens")
 bois_census_tract_borders <- geojson_sf('./data/nyc_2010_census_tract_borders.geojson') %>%
@@ -108,15 +108,15 @@ tmap::tm_shape(bois_census_tract_borders) +
     title = "Borough"
   )
 ```
-**Figure 2: Map of census tracts for the boroughs of interest.**  
+*Figure 2: Map of census tracts for the boroughs of interest.*  
 
-*Estimate the average distance from the center to the edge of tract*  
+**Estimate the average distance from the center to the edge of tract**  
 ```{r, message = FALSE}
 avg_tract_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census_tract_borders$Shape__Area)
 avg_tract_radius <- sqrt(avg_tract_area/pi)
 sprintf("Estimate of average distance from the center to the edge of a tract: %s m", avg_tract_radius)
 ```
-
+**Map NTAs**  
 ```{r, message = FALSE}
 # Map borough of interest ntas
 bois_nta_borders <- geojson_sf('./data/nyc_2010_nta_borders.geojson') %>%
@@ -130,12 +130,13 @@ tmap::tm_shape(bois_nta_borders) +
 ```
 *Figure 3: Map of NTAs for boroughs of interest*  
 
+**Estimate of average distance from center to edge of nta**  
 ```{r, message = FALSE}
-# Estimate of average distance from center to edge of nta
 avg_nta_area <- sum(bois_nta_borders$Shape__Area) / length(bois_nta_borders$Shape__Area)
 avg_nta_radius <- sqrt(avg_nta_area/pi)
 sprintf('Estimate of average distance from center to edge of nta: % s m', avg_nta_radius)
 ```
+
 ### Demonstrate the disparity between Manhattan and the other boroughs of interest 
 After selecting NTAs as the boundaries, I began to explore the trip data for each
 neighborhood. Before the exploratory process, I expected Midtown Manhattan to
@@ -149,10 +150,10 @@ Professor Albrecht recommended I attempt to detect more subtle patterns by narro
 the study area to a single borough. As part of this process, I explored the 
 intra-borough travel patterns.
 
-*Count the number of trips between neighborhoods of interest.*
-*The trips must start and end in the city. They must also start and end in different*
-*neighborhoods. Finally, we remove park ntas; they do not represent a single*
-*geographic area and they are not expected to have significant work commute activity.*
+**Count the number of trips between neighborhoods of interest.**  
+*The trips must start and end in the city. They must also start and end in different*  
+*neighborhoods. Finally, we remove park ntas; they do not represent a single*  
+*geographic area and they are not expected to have significant work commute activity.*  
 ```{r, message = FALSE}
 # Create table to relate NTAs to their component census tracts
 bois_county_tract_nta_equiv <- readxl::read_xlsx('./data/nyc_2010_census_tract_nta_equiv.xlsx') %>%
@@ -196,7 +197,7 @@ bois_nta_ods <- read_csv('./data/ny_od_main_JT00_2019.csv') %>%
   unique()
 ```
 
-*Map the distribution of work trips that end in each neighborhoods of interest.*
+**Map the distribution of work trips that end in each neighborhoods of interest.**  
 ```{r, message = FALSE}
 
 ## utility function
@@ -236,10 +237,10 @@ tmap::tm_shape(bois_nta_dest) +
   )
 ```
 *Figure 4: Distribution of work trips that end in each neighborhood.*  
-*Each trip must start in the boroughs of interest. It must also end in a different*
+*Each trip must start in the boroughs of interest. It must also end in a different*  
 *neighborhood than it started.*  
 
-*Define the desire lines for work trips throughout the boroughs of interest*
+**Define the desire lines for work trips throughout the boroughs of interest**
 ```{r, message=TRUE}
 # Points on surface
 bois_nta_pos <- bois_nta_borders %>%
@@ -286,7 +287,7 @@ As Brooklyn has the second most trips and these trips are distributed throughout
 the borough, it will be used as the sole borough of interest for the rest of
 the project. The decision to use Brooklyn was submitted on Oct 17.
 
-*Map the distribution of intra-borough trips that end in each NTA*
+**Map the distribution of intra-borough trips that end in each NTA** 
 ```{r, message=FALSE}
 ## NTA borders for each borough
 mn_nta_borders <- bois_nta_borders %>%
@@ -352,10 +353,10 @@ qn_dest_map <- tmap::tm_shape(qn_nta_dest) +
   )
 tmap::tmap_arrange(mn_dest_map, bx_dest_map, bk_dest_map, qn_dest_map, nrow = 2, ncol = 2)
 ```
-*Figure 6: Intra-borough and Inter-NTA trips for the boroughs of interest *
+*Figure 6: Intra-borough and Inter-NTA trips for the boroughs of interest*  
 
 
-*Desire lines for intra borough trips*
+**Desire lines for intra borough trips**  
 ```{r, message=FALSE}
 mn_nta_od_lines <- get_nta_od_lines(mn_nta_ods)
 bx_nta_od_lines <- get_nta_od_lines(bx_nta_ods)
@@ -405,9 +406,9 @@ tmap::tmap_arrange(
   nrow = 2,
   ncol = 2)
 ```
-*Figure 7: Desire lines for intra-borough work trips*
+*Figure 7: Desire lines for intra-borough work trips*  
 
-*Total intra-borough trips for each borough of interest*
+**Total intra-borough trips for each borough of interest**  
 ```{r, message = FALSE}
 print("Intra borough trips")
 sprintf("Manhattan: % s", sum(mn_nta_ods$S000))
