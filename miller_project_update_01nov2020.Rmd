@@ -3,14 +3,7 @@ output:
   pdf_document: default
   html_document: default
 ---
-## Necessary libraries
-```{r message = FALSE}
-library(tidyverse)
-library(geojsonsf)
-library(sf)
-library(tmap)
-options(scipen = 999)
-```
+
 # Outline
 - Changes to the topic
   - Shift from trying to predict changes in dynamics to instead focusing on how much of an impact each travel mode makes
@@ -20,6 +13,40 @@ options(scipen = 999)
 - Review of the original timeline: 
   - more detailed information on what has changed for the project
 - A more detailed version of the methods to be applied.
+
+# A Prediction on the Effect of the Proposed Triboro Line: Project Update
+Timothy Miller  
+Dept. of Geography and Environmental Science, Hunter College  
+GTECH 70500: Spatial Data Analysis
+Professor Jochen Albrecht
+November 1, 2022
+
+## Outline
+This report documents the progress made on during research into possible effects
+of the proposed Triboro line on the transportation dynamics of Manhattan, The Bronx,
+Brooklyn, and Queens. The report will:
+- review the original research proposal
+- share results of the exploratory spatial data analysis
+- seexamine the research question
+- update the research goals and strategies
+
+## Original Research Proposal
+
+## Exploratory Spatial Data Analysis
+
+Necessary libraries
+```{r message = FALSE}
+# Data cleaning and organizing
+library(tidyverse)
+# Import geojson in an sf compatible format 
+library(geojsonsf)
+# Manage spatial data
+library(sf)
+# Map the geospatial results
+library(tmap)
+# Prevent use of scientific notation for coordinates
+options(scipen = 999)
+```
 
 ## Conceptual Model
 ![Conceptual Model of travel](./images/triboro-conceptual-model-original.png)
