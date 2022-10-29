@@ -72,7 +72,7 @@ generally small enough that people can walk between them. Because the research
 question is not interested in these trips, we can consolidate these census blocks
 into census tracts. 
 
-#### Census tracts
+#### Census tracts  
 Figure 2 indicates that it is also feasible to walk between census tracts. 
 We can generally estimate the distance from the center of each tract to its edge.
 This will help quantify census tract walk-ability. Let us consider a distance 
@@ -101,7 +101,7 @@ avg_tract_area <- sum(bois_census_tract_borders$Shape__Area)/ length(bois_census
 avg_tract_radius <- sqrt(avg_tract_area/pi)
 sprintf("Estimate of average distance from the center to the edge of a tract: %s m", avg_tract_radius)
 ```
-#### NYC NTAs
+#### NYC NTAs  
 NYC provides a higher level of aggregation than the census tract. The Neighborhood
 Tabulation Area (NTA) groups census tracts in a way that generally aligns with 
 neighborhood boundaries within the city. They are mapped in Figure 3. They have an
@@ -460,7 +460,7 @@ Figure 11. We will also use the number of trips across the arc as its value.
 *Membership is defined as two arcs sharing an NTA*  
 
 ![Definition of Moran's I](images/morans-i-definition.png)  
-**Figure 12: Definition of Moran's I**   
+*Figure 12: Definition of Moran's I*   
 
 In a discussion with Professor Albrecht on October 28, I proposed applying network
 auto-correlation between the desire lines and several definitions for neighbor
