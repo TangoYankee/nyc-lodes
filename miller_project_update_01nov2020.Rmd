@@ -13,7 +13,7 @@ November 1, 2022
 ## Outline  
 This report documents the progress made on the research into possible effects
 of the proposed Triboro line on the transportation dynamics of Manhattan, the Bronx,
-Brooklyn, and Queens- collective referred to as the boroughs of interest.  
+Brooklyn, and Queens- collectively referred to as the "boroughs of interest."  
 
 The report will:  
 - review the original research proposal  
@@ -514,8 +514,8 @@ local auto-correlation tests.
 ## Updated research goals and strategies
 
 The updated research project seeks to understand the relationship between
-commutes, transportation systems, and physical space. The first statistical
-test will be an network auto-correlation for desire lines. The next six 
+commutes, transportation systems, and physical space. The first two statistical
+tests will be global and local network auto-correlations for desire lines. The next six 
 statistical tests will be global and local auto-correlations on number of trips made to an NTA, 
 with three definitions for neighbors. The first definition will be the presence
 of a direct subway route. The second definition will be the presence of road
@@ -529,7 +529,7 @@ data needs inventory is also simpler.
 The total inventory is:
 - Origin and Destination data for NYS in 2019 at the block level  
 - NYC NTA borders  
-- NYC boroughs borders  
+- NYC borough borders  
 - Equivalency of NTAs to census tracts  
 - Subway-based routes between NTAs
 - Major street-based routes between NTAs
@@ -540,15 +540,15 @@ proprietary routing services, such as Google.
 
 With Dec 13 as the presentation deadline, the timeline of milestones follows:    
 - Perform queen contiguity local and global auto-correlation, and regression (Nov 8th)  
-  - Queen contiguity auto-correlation is the "traditional" approach. It is also
+   - Queen contiguity auto-correlation is the "traditional" approach. It also
   does not require the routing data. Performing it first should help inform the 
   other analyses.  
 - Perform subway contiguity local and global auto-correlation, and regression (Nov 15)  
-  - This requires requests to a routing service to obtain the data. Making those
+   - This requires requests to a routing service to obtain the data. Making those
   api requests early will help identify potential problems while there is time 
   to adapt.  
 - Perform major street contiguity local and global auto-correlation, and regression (Nov 22)  
-- Perform network auto-correlation (Nov 29)
+- Perform global and local network auto-correlation (Nov 29)  
 - Write report and presentation (Dec 6)  
   
 The report will conclude with an examination of the findings and speculation on
